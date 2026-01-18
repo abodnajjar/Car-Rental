@@ -8,6 +8,8 @@ CREATE TABLE `users` (
   `phone` varchar(20) DEFAULT NULL,
   `role` enum('admin','employee','customer') NOT NULL,
   `password_hash` varchar(255) NOT NULL,
+  `driving_license_no` varchar(50) DEFAULT NULL,
+  `salary` decimal(10,2) DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
 select * from users;
