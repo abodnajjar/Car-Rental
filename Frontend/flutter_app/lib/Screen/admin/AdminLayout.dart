@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 // Admin Screens
 import 'dashboard_screen.dart';
-import 'employees_screen.dart';
+import './employees/employees_screen.dart';
 import 'bookings/booked_cars_screen.dart';
 
 // Profile
-import '../profile/profile_screen.dart';
+import '../profileScreen.dart';
 
 class AdminLayout extends StatefulWidget {
   const AdminLayout({super.key});
@@ -25,12 +25,11 @@ class _AdminLayoutState extends State<AdminLayout> {
     "Bookings",
   ];
 
-  final List<Widget> _screens = const [
-    DashboardScreen(),      // index 0
-    EmployeesScreen(),      // index 1
-    BookedCarsScreen(),     // index 2
-  ];
-
+final List<Widget> _screens = [
+  DashboardScreen(),
+  EmployeesScreen(),
+  BookedCarsScreen(),
+];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
