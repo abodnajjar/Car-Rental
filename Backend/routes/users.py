@@ -4,7 +4,7 @@ from db_conection import get_connection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-
+# get all employe
 @router.get("/employees", response_model=list[UserOut])
 def get_employees():
     conn = get_connection()
@@ -32,7 +32,7 @@ def get_employees():
     finally:
         conn.close()
 
-
+# get customer count 
 @router.get("/customers/count")
 def get_customers_count():
     conn = get_connection()
@@ -50,7 +50,25 @@ def get_customers_count():
     finally:
         conn.close()
 
+# get employee count
+@router.get("/employees/count")
+def get_employees_count():
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT COUNT(*)
+            FROM users
+            WHERE role = %s
+        """, ("employee",))
 
+        count = cur.fetchone()[0]
+        return {"employees_count": count}
+
+    finally:
+        conn.close()
+
+# get the user info by user id
 @router.get("/{user_id}", response_model=UserOut)
 def get_user_by_id(user_id: int):
     conn = get_connection()
@@ -80,7 +98,7 @@ def get_user_by_id(user_id: int):
     finally:
         conn.close()
 
-
+# update user info 
 @router.put("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, payload: UserUpdate):
     data = payload.model_dump(exclude_none=True)
@@ -115,7 +133,7 @@ def update_user(user_id: int, payload: UserUpdate):
             LIMIT 1
         """, (user_id,))
         updated = cur.fetchone()
-
+        conn.commit()  
         return {
             "uid": str(updated[0]),
             "full_name": updated[1],
@@ -124,6 +142,35 @@ def update_user(user_id: int, payload: UserUpdate):
             "role": updated[4],
             "driving_license_no": updated[5],
             "salary": updated[6],
+        }
+
+    finally:
+        conn.close()
+        
+@router.delete("/{user_id}")
+def delete_user(user_id: int):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id FROM users WHERE id = %s LIMIT 1",
+            (user_id,)
+        )
+        user = cur.fetchone()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        cur.execute(
+            "DELETE FROM users WHERE id = %s",
+            (user_id,)
+        )
+        conn.commit()
+
+        return {
+            "message": "User deleted successfully",
+            "user_id": user_id
         }
 
     finally:
