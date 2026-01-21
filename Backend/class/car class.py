@@ -2,15 +2,16 @@
 from car_price_class import CarPrice
 
 class Car:
-    def __init__(self, car_id, brand, model, category, year, status):
+    def __init__(self, car_id, brand, model, category, year, status,image_url=None):
         self.car_id = car_id
         self.brand = brand
         self.model = model
         self.category = category
         self.year = year
         self.status = status
+        self.image_url = image_url
         self.prices = []
-
+  
     def get_brand(self):
         return self.brand
 
@@ -41,6 +42,12 @@ class Car:
     def set_status(self, status):
         self.status = status
 
+    def get_image_url(self):
+        return self.image_url
+
+    def set_image_url(self, image_url):
+        self.image_url = image_url
+
     def add_price(self, day, price):
         car_price = CarPrice(day, price)
         self.prices.append(car_price)
@@ -55,4 +62,4 @@ class Car:
           prices = []
           for p in self.prices:
             prices.append(p.get_price())
-            return prices
+          return prices
