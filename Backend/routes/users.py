@@ -4,7 +4,7 @@ from db_conection import get_connection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-
+# git all employees for the admin page
 @router.get("/employees", response_model=list[UserOut])
 def get_employees():
     conn = get_connection()
@@ -32,7 +32,7 @@ def get_employees():
     finally:
         conn.close()
 
-
+# git the number of customer for the admin dash board
 @router.get("/customers/count")
 def get_customers_count():
     conn = get_connection()
@@ -50,7 +50,7 @@ def get_customers_count():
     finally:
         conn.close()
 
-
+# git information about the user by id for editing and show profile
 @router.get("/{user_id}", response_model=UserOut)
 def get_user_by_id(user_id: int):
     conn = get_connection()
@@ -80,7 +80,7 @@ def get_user_by_id(user_id: int):
     finally:
         conn.close()
 
-
+# update user information 
 @router.put("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, payload: UserUpdate):
     data = payload.model_dump(exclude_none=True)
