@@ -4,7 +4,7 @@ from schemas.car import CarOut
 
 router = APIRouter(tags=["Cars"])
 
-
+# return all cars for admin page and customer page
 @router.get("/cars", response_model=list[CarOut])
 def get_all_cars():
     conn = get_connection()
