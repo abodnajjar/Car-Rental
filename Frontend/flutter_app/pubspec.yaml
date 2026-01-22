@@ -7,6 +7,9 @@ version: 1.0.0+1
 =======
 
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 environment:
   sdk: ^3.10.1
