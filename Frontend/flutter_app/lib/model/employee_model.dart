@@ -3,31 +3,25 @@ class Employee {
   final String fullName;
   final String email;
   final String phone;
-  final String role;
-  final String? drivingLicenseNo;
-  final double? salary;
+  final double salary;
 
   Employee({
     required this.uid,
     required this.fullName,
     required this.email,
     required this.phone,
-    required this.role,
-    this.drivingLicenseNo,
-    this.salary,
+    required this.salary,
   });
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      uid: json['uid'].toString(),
-      fullName: json['full_name'],
+      uid: json['uid'].toString(),               // ✅ uid
+      fullName: json['full_name'],               // ✅ full_name
       email: json['email'],
       phone: json['phone'],
-      role: json['role'],
-      drivingLicenseNo: json['driving_license_no'],
       salary: json['salary'] == null
-          ? null
-          : double.parse(json['salary'].toString()),
+          ? 0.0
+          : (json['salary'] as num).toDouble(),  // ✅ safe
     );
   }
 }

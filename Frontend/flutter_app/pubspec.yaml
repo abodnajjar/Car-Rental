@@ -3,6 +3,14 @@ description: "A new Flutter project."
 publish_to: "none"
 
 version: 1.0.0+1
+<<<<<<< Updated upstream
+=======
+
+
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 environment:
   sdk: ^3.10.1
 

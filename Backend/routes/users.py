@@ -4,7 +4,13 @@ from db_conection import get_connection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# get all employe
+
+# =====================================================
+# GET all employees (Admin page)
+# =====================================================
+
+
+
 @router.get("/employees", response_model=list[UserOut])
 def get_employees():
     conn = get_connection()
@@ -32,7 +38,12 @@ def get_employees():
     finally:
         conn.close()
 
-# get customer count 
+
+# =====================================================
+# GET customers count (Dashboard)
+# =====================================================
+
+
 @router.get("/customers/count")
 def get_customers_count():
     conn = get_connection()
@@ -49,6 +60,11 @@ def get_customers_count():
 
     finally:
         conn.close()
+
+
+# =====================================================
+# GET user by id
+# =====================================================
 
 # get employee count
 @router.get("/employees/count")
@@ -69,6 +85,7 @@ def get_employees_count():
         conn.close()
 
 # get the user info by user id
+
 @router.get("/{user_id}", response_model=UserOut)
 def get_user_by_id(user_id: int):
     conn = get_connection()
@@ -98,7 +115,13 @@ def get_user_by_id(user_id: int):
     finally:
         conn.close()
 
-# update user info 
+
+# =====================================================
+# UPDATE user information (general)
+# =====================================================
+
+
+
 @router.put("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, payload: UserUpdate):
     data = payload.model_dump(exclude_none=True)
@@ -109,23 +132,17 @@ def update_user(user_id: int, payload: UserUpdate):
     try:
         cur = conn.cursor()
 
-        # check exists
         cur.execute("SELECT id FROM users WHERE id = %s LIMIT 1", (user_id,))
         if not cur.fetchone():
             raise HTTPException(status_code=404, detail="User not found")
 
-        # build update query
-        set_parts = []
-        for key in data.keys():
-            set_parts.append(f"{key}=%s")
-
-        set_clause = ", ".join(set_parts)
+        set_clause = ", ".join([f"{k}=%s" for k in data.keys()])
         values = list(data.values()) + [user_id]
 
         query = f"UPDATE users SET {set_clause} WHERE id=%s"
         cur.execute(query, tuple(values))
+        conn.commit()
 
-        # return updated
         cur.execute("""
             SELECT id, full_name, email, phone, role, driving_license_no, salary
             FROM users
@@ -146,12 +163,85 @@ def update_user(user_id: int, payload: UserUpdate):
 
     finally:
         conn.close()
+
+
+# =====================================================
+# ✅ NEW: UPDATE employee salary (Admin only)
+# =====================================================
+@router.put("/employees/{user_id}/salary", response_model=UserOut)
+def update_employee_salary(user_id: int, salary: float):
+
         
 @router.delete("/{user_id}")
 def delete_user(user_id: int):
+
     conn = get_connection()
     try:
         cur = conn.cursor()
+
+
+        cur.execute("""
+            SELECT id
+            FROM users
+            WHERE id = %s AND role = %s
+        """, (user_id, "employee"))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Employee not found")
+
+        cur.execute("""
+            UPDATE users
+            SET salary = %s
+            WHERE id = %s
+        """, (salary, user_id))
+
+        conn.commit()
+
+        cur.execute("""
+            SELECT id, full_name, email, phone, role, driving_license_no, salary
+            FROM users
+            WHERE id = %s
+        """, (user_id,))
+        emp = cur.fetchone()
+
+        return {
+            "uid": str(emp[0]),
+            "full_name": emp[1],
+            "email": emp[2],
+            "phone": emp[3],
+            "role": emp[4],
+            "driving_license_no": emp[5],
+            "salary": emp[6],
+        }
+
+    finally:
+        conn.close()
+
+# =====================================================
+# 🗑️ NEW: DELETE employee (Admin only)
+# =====================================================
+@router.delete("/employees/{user_id}")
+def delete_employee(user_id: int):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id
+            FROM users
+            WHERE id = %s AND role = %s
+        """, (user_id, "employee"))
+
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail="Employee not found")
+
+        cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+
+        return {"success": True, "message": "Employee deleted successfully"}
+
+    finally:
+        conn.close()
 
         cur.execute(
             "SELECT id FROM users WHERE id = %s LIMIT 1",
@@ -175,3 +265,4 @@ def delete_user(user_id: int):
 
     finally:
         conn.close()
+
