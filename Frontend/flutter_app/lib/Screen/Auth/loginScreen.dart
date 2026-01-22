@@ -184,11 +184,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final role = response['role'] as String;
-
+      final userId=response['user_id'] as int;
       // حفظ بيانات بسيطة
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("role", role);
       await prefs.setBool("isLoggedIn", true);
+      await prefs.setInt("user_id", userId);
 
       // التوجيه حسب الدور باستخدام push
       if (role == "customer") {
@@ -199,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (role == "employee") {
         // لاحقًا تضيف EmployeeScreen
       } else if (role == "admin") {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => const AdminLayout(),
