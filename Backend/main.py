@@ -15,11 +15,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(car_prices_router)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(cars_router)
+app.include_router(bookings_router)
 @app.get("/")
 def root():
     return {"status": "ok"}
