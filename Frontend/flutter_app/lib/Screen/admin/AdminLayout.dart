@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // Admin Screens
 import 'dashboard_screen.dart';
 import './employees/employees_screen.dart';
+import './cars/CarsScreen.dart';
 import 'bookings/booked_cars_screen.dart';
 
 // Profile
@@ -22,14 +23,18 @@ class _AdminLayoutState extends State<AdminLayout> {
   final List<String> _titles = [
     "Dashboard",
     "Employees",
+    "Cars",
     "Bookings",
   ];
 
-final List<Widget> _screens = [
-  DashboardScreen(),
-  EmployeesScreen(),
-  BookedCarsScreen(),
-];
+  // ================= Screens =================
+  final List<Widget> _screens = [
+    DashboardScreen(),
+    EmployeesScreen(),
+    CarsScreen(),
+    BookedCarsScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,6 +103,10 @@ final List<Widget> _screens = [
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: "Employees",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.directions_car),
+            label: "Cars",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.book_online),

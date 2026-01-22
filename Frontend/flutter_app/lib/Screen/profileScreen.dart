@@ -1,14 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Screen/Auth/loginScreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../api/profileApi.dart';
+import 'package:flutter_app/editProfile.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String fullName = "";
+  String email = "";
+  String phone = "";
+  String role = "";
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadProfile();
+  }
+
+  Future<void> loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt("user_id");
+
+    if (userId == null) return;
+
+    final data = await ProfileApi().getProfile(userId);
+
+    setState(() {
+      fullName = data['full_name'];
+      email = data['email'];
+      phone = data['phone'];
+      role = data['role'];
+      isLoading = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final String fullName = "Mohammad Sroor";
-    final String email = "mohammad@example.com";
-    final String phone = "+970 599 000 000";
-    final String role = "Customer";
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
@@ -55,6 +95,12 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.edit_outlined),
             onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditprofileScreen(),
+                ),
+              );
               // TODO: Navigate to Edit Profile
             },
           ),
@@ -77,7 +123,6 @@ class ProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Full Name
                     Row(
                       children: [
                         const Icon(Icons.person, color: Colors.blue),
@@ -99,7 +144,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
 
-                    // Email
                     Row(
                       children: [
                         const Icon(Icons.email_outlined, color: Colors.orange),
@@ -121,7 +165,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
 
-                    // Phone
                     Row(
                       children: [
                         const Icon(Icons.phone_outlined, color: Colors.green),
@@ -143,7 +186,6 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
 
-                    // Role
                     Row(
                       children: [
                         const Icon(Icons.badge_outlined, color: Colors.purple),
@@ -185,36 +227,24 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     title: const Text("Edit Profile"),
                     onTap: () {
-                      // TODO: Navigate to Edit Profile
-                    },
+                      Navigator.push(context, 
+                      MaterialPageRoute(builder: (context) => const EditprofileScreen())
+                      );},
+                
                   ),
                   const Divider(height: 1),
                   ListTile(
-                    leading: const Icon(
-                      Icons.lock_outline,
-                      color: Colors.orange,
-                    ),
-                    title: const Text("Change Password"),
-                    onTap: () {
-                      // TODO: Navigate to Change Password
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.red),
+                    leading:
+                        const Icon(Icons.logout, color: Colors.red),
                     title: const Text("Logout"),
-                    onTap: () {
-                      // TODO: Perform Logout
+                    onTap: () async{
+                      final prefs=await SharedPreferences.getInstance();
+                      await prefs.clear();
+
+                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false);
                     },
                   ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.book_online, color: Colors.green),
-                    title: const Text("View Booking History"),
-                    onTap: () {
-                      // TODO: Navigate to Booking History
-                    },
-                  ),
+                
                 ],
               ),
             ),
