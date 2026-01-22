@@ -68,7 +68,7 @@ def add_car(car: CarCreate):
         cur.execute("SELECT * FROM cars WHERE id=%s", (car_id,))
         result = cur.fetchone()
         result["status"] = bool(result["status"])
-
+        
         return result
     finally:
         conn.close()

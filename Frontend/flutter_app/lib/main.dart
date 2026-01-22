@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-
-
-
-//import 'Screen/Auth/loginScreen.dart';
-
-import 'Screen/admin/AdminLayout.dart';
+import 'package:flutter_app/Screen/Auth/loginScreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +12,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: AdminLayout(),
+      home: LoginScreen(),
+
     );
   }
 }
