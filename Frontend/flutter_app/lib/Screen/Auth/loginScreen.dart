@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (role == "employee") {
         // لاحقًا تضيف EmployeeScreen
       } else if (role == "admin") {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => const AdminLayout(),

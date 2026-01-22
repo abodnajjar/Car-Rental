@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../api/Signup.dart'; 
+import '../../../api/SignUp.dart';
 
 class AddEmployeeScreen extends StatefulWidget {
   const AddEmployeeScreen({super.key});
@@ -15,24 +15,27 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final password = TextEditingController();
   final salary = TextEditingController();
 
-  final AuthApi _authApi = AuthApi();
+  final AuthApi api = AuthApi();
+  bool loading = false;
 
-  void addEmployee() async {
+  Future<void> addEmployee() async {
+    setState(() => loading = true);
     try {
-      await _authApi.signup(
-        fullName: name.text.trim(),
-        email: email.text.trim(),
-        phone: phone.text.trim(),
+      await api.signup(
+        fullName: name.text,
+        email: email.text,
+        phone: phone.text,
         password: password.text,
         role: "employee",
         salary: double.parse(salary.text),
       );
 
-      Navigator.pop(context); 
+      Navigator.pop(context, true); // 🔄 يرجع ونعمل refresh
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      setState(() => loading = false);
     }
   }
 
@@ -44,33 +47,22 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(
-              controller: name,
-              decoration: const InputDecoration(labelText: "Full Name"),
-            ),
-            TextField(
-              controller: email,
-              decoration: const InputDecoration(labelText: "Email"),
-            ),
-            TextField(
-              controller: phone,
-              decoration: const InputDecoration(labelText: "Phone"),
-            ),
-            TextField(
-              controller: password,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: "Password"),
-            ),
+            TextField(controller: name, decoration: const InputDecoration(labelText: "Full Name")),
+            TextField(controller: email, decoration: const InputDecoration(labelText: "Email")),
+            TextField(controller: phone, decoration: const InputDecoration(labelText: "Phone")),
+            TextField(controller: password, decoration: const InputDecoration(labelText: "Password")),
             TextField(
               controller: salary,
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: "Salary"),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: addEmployee,
-              child: const Text("Add Employee"),
-            )
+              onPressed: loading ? null : addEmployee,
+              child: loading
+                  ? const CircularProgressIndicator()
+                  : const Text("Add Employee"),
+            ),
           ],
         ),
       ),

@@ -1,5 +1,13 @@
 from fastapi import APIRouter, HTTPException
 from db_conection import get_connection
+
+from schemas.car import CarOut, CarCreate, CarUpdate
+
+router = APIRouter(prefix="/admin", tags=["Cars"])
+
+# ===============================
+# GET all cars
+# ===============================
 from schemas.car import CarOut, CarCreate,CarUpdate
 
 router = APIRouter(tags=["Cars"])
@@ -19,48 +27,97 @@ def cars_count():
 def get_all_cars():
     conn = get_connection()
     try:
-        cur = conn.cursor()
-
+        cur = conn.cursor(dictionary=True)
         cur.execute("""
-            SELECT id, brand, model, category, year, status, image_url
+            SELECT id, brand, model, category, year, status, image
             FROM cars
             ORDER BY id DESC
         """)
-        cars_rows = cur.fetchall()
+        cars = cur.fetchall()
 
-        result = []
-        for c in cars_rows:
-            car_id = c[0]  
+        for c in cars:
+            c["status"] = bool(c["status"])
 
-            cur.execute("""
-                SELECT id, day, price
-                FROM car_prices
-                WHERE car_id = %s
-                ORDER BY id ASC
-            """, (car_id,))
-            price_rows = cur.fetchall()
+        return cars
+    finally:
+        conn.close()
 
-            prices = []
-            for p in price_rows:
-                prices.append({
-                    "id": p[0],
-                    "day": p[1],
-                    "price": float(p[2]),
-                })
 
-            result.append({
-                "car_id": c[0],         
-                "brand": c[1],
-                "model": c[2],
-                "category": c[3],
-                "year": c[4],
-                 "status": bool(c[5]),
-                "image_url": c[6],
-                "prices": prices
-            })
+# ===============================
+# ADD car
+# ===============================
+@router.post("/cars", response_model=CarOut)
+def add_car(car: CarCreate):
+    conn = get_connection()
+    try:
+        cur = conn.cursor(dictionary=True)
+        cur.execute("""
+            INSERT INTO cars (brand, model, category, year, status, image)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            car.brand,
+            car.model,
+            car.category,
+            car.year,
+            car.status,
+            car.image
+        ))
+        conn.commit()
 
+        car_id = cur.lastrowid
+        cur.execute("SELECT * FROM cars WHERE id=%s", (car_id,))
+        result = cur.fetchone()
+        result["status"] = bool(result["status"])
+        
         return result
+    finally:
+        conn.close()
 
+
+# ===============================
+# UPDATE car
+# ===============================
+@router.put("/cars/{car_id}")
+def update_car(car_id: int, car: CarUpdate):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        fields = []
+        values = []
+
+        for key, value in car.dict(exclude_unset=True).items():
+            fields.append(f"{key}=%s")
+            values.append(value)
+
+        if not fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        values.append(car_id)
+
+        cur.execute(
+            f"UPDATE cars SET {', '.join(fields)} WHERE id=%s",
+            values
+        )
+        conn.commit()
+
+        return {"message": "Car updated successfully"}
+    finally:
+        conn.close()
+
+
+# ===============================
+# DELETE car
+# ===============================
+@router.delete("/cars/{car_id}")
+def delete_car(car_id: int):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM cars WHERE id=%s", (car_id,))
+        conn.commit()
+
+        return {"message": "Car deleted successfully"}
     finally:
         conn.close()
 # add new car
