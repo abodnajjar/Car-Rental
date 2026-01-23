@@ -105,6 +105,7 @@ def delete_car(car_id: int):
         return {"message": "Car deleted successfully"}
     finally:
         conn.close()
+        
 # add new car
 @router.post("/cars", response_model=CarOut, status_code=201)
 def add_car(payload: CarCreate):
