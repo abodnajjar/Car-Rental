@@ -210,8 +210,24 @@ def create_and_get_reminder_notifications(
 
         results: list[dict] = []
         for r in rentals:
+            time_left = r["end_date"] - now
+            if time_left.total_seconds() <= 0:
+                continue
+
+            if time_left < timedelta(days=1):
+                message = (
+                    f"Your rental (id={r['id']}) ends in less than 24 hours."
+                )
+            else:
+                days_left = int(time_left.total_seconds() // 86400)
+                if days_left < 1:
+                    days_left = 1
+                message = (
+                    f"Your rental (id={r['id']}) will end in about {days_left} day(s) "
+                    f"on {r['end_date']}."
+                )
+
             title = "Rental ending soon"
-            message = f"Your rental (id={r['id']}) will end on {r['end_date']}."
 
             # DEDUPE by rental_id (much safer than by message text)
             cur.execute(

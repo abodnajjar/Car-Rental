@@ -6,6 +6,7 @@ class PendingBookingOut(BaseModel):
     booking_id: int
     user_id: int
     car_id: int
+    image_url: Optional[str] = None
     pickup_location: Optional[str] = None
     dropoff_location: Optional[str] = None
     start_date: datetime

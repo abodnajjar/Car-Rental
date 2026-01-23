@@ -76,6 +76,36 @@ def calculate_price(cur, car_id: int, start_date: date, end_date: date):
 
     return len(days), total, breakdown
 
+
+def _status_notification(status: str, booking_id: int) -> tuple[str, str]:
+    status = status.lower().strip()
+    if status in ("approved", "accepted"):
+        return (
+            "Booking approved",
+            f"Your booking #{booking_id} has been approved.",
+        )
+    if status in ("cancelled", "rejected"):
+        return (
+            "Booking rejected",
+            f"Your booking #{booking_id} has been rejected.",
+        )
+    if status == "active":
+        return (
+            "Car pickup confirmed",
+            f"Your booking #{booking_id} is now active. Enjoy your ride!",
+        )
+    if status == "completed":
+        return (
+            "Rental completed",
+            f"Your booking #{booking_id} has been completed. Thank you for choosing CarRental.",
+        )
+    if status == "pending":
+        return (
+            "Booking pending",
+            f"Your booking #{booking_id} is pending review.",
+        )
+    return ("Booking update", f"Your booking #{booking_id} status is now '{status}'.")
+
 # first request to know the price of booking
 @router.post("/price", response_model=BookingQuoteOut)
 def price_booking(payload: BookingDraftIn):
@@ -239,9 +269,11 @@ def get_pending_bookings():
                 id, user_id, car_id,
                 pickup_location, dropoff_location,
                 start_date, end_date,
-                total_price, status, created_at
-            FROM rentals
-            WHERE status = 'pending'
+                total_price, r.status, created_at,
+                c.image_url
+            FROM rentals r
+            JOIN cars c ON c.id = r.car_id
+            WHERE r.status = 'pending'
             ORDER BY id DESC
         """)
         rows = cur.fetchall()
@@ -257,8 +289,61 @@ def get_pending_bookings():
             "total_price": float(r[7]) if r[7] else 0.0,
             "booking_status": r[8],
             "created_at": r[9],
+            "image_url": r[10],
         } for r in rows]
 
+    finally:
+        conn.close()
+
+
+@router.get("/status/{status}", response_model=list[PendingBookingOut])
+def get_bookings_by_status(status: str):
+    status = status.lower().strip()
+
+    if status in ("accepted",):
+        statuses = ("approved", "active", "completed")
+    elif status in ("rejected", "cancelled", "canceled"):
+        statuses = ("cancelled",)
+    elif status in ("pending", "approved", "active", "completed"):
+        statuses = (status,)
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="status must be one of pending, accepted, rejected, approved, active, completed, cancelled",
+        )
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        placeholders = ", ".join(["%s"] * len(statuses))
+        cur.execute(f"""
+            SELECT
+                r.id, r.user_id, r.car_id,
+                r.pickup_location, r.dropoff_location,
+                r.start_date, r.end_date,
+                r.total_price, r.status, r.created_at,
+                c.image_url
+            FROM rentals r
+            JOIN cars c ON c.id = r.car_id
+            WHERE r.status IN ({placeholders})
+            ORDER BY r.id DESC
+        """, statuses)
+
+        rows = cur.fetchall()
+
+        return [{
+            "booking_id": r[0],
+            "user_id": r[1],
+            "car_id": r[2],
+            "pickup_location": r[3],
+            "dropoff_location": r[4],
+            "start_date": r[5],
+            "end_date": r[6],
+            "total_price": float(r[7]) if r[7] else 0.0,
+            "booking_status": r[8],
+            "created_at": r[9],
+            "image_url": r[10],
+        } for r in rows]
     finally:
         conn.close()
 
@@ -377,16 +462,36 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
         cur = conn.cursor()
 
         cur.execute(
-            "SELECT id FROM rentals WHERE id=%s LIMIT 1",
+            "SELECT id, user_id FROM rentals WHERE id=%s LIMIT 1",
             (booking_id,)
         )
-        if not cur.fetchone():
+        row = cur.fetchone()
+        if not row:
             raise HTTPException(404, "Booking not found")
+        user_id = row[1]
 
         cur.execute(
             "UPDATE rentals SET status=%s WHERE id=%s",
             (new_status, booking_id)
         )
+
+        title, message = _status_notification(new_status, booking_id)
+        cur.execute(
+            """
+            SELECT id FROM notifications
+            WHERE user_id=%s AND rental_id=%s AND title=%s
+            LIMIT 1
+            """,
+            (user_id, booking_id, title),
+        )
+        if not cur.fetchone():
+            cur.execute(
+                """
+                INSERT INTO notifications (user_id, title, message, rental_id, is_read, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (user_id, title, message, booking_id, 0, datetime.utcnow()),
+            )
 
         conn.commit()
 
