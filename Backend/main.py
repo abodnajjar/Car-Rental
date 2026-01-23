@@ -5,6 +5,8 @@ from routes.users import router as users_router
 from routes.cars import router as cars_router
 from fastapi.middleware.cors import CORSMiddleware
 from routes.car_prices import router as car_prices_router
+from routes.notifications import router as notifications_router
+
 app = FastAPI(title="Car Rental Backend")
 
 
@@ -20,6 +22,7 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(cars_router)
+app.include_router(notifications_router)
 @app.get("/")
 def root():
     return {"status": "ok"}

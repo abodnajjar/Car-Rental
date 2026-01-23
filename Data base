@@ -82,3 +82,10 @@ CREATE TABLE notifications (
 );
 
 
+ALTER TABLE notifications
+  ADD COLUMN rental_id INT NULL,
+  ADD INDEX idx_notifications_user_read (user_id, is_read),
+  ADD INDEX idx_notifications_rental (rental_id);
+
+ALTER TABLE notifications
+  ADD UNIQUE KEY uq_notifications_rental_reminder (user_id, rental_id, title);
