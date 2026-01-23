@@ -13,3 +13,4 @@ class PendingBookingOut(BaseModel):
     total_price: float
     booking_status: str
     created_at: datetime
+
