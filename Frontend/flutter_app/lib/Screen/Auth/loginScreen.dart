@@ -4,6 +4,7 @@ import '../../api/loginApi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Customer/CustomerScreen.dart';
 import '../admin/AdminLayout.dart';
+import '../EmployeeA/employeeScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -198,7 +199,10 @@ class _LoginScreenState extends State<LoginScreen> {
           MaterialPageRoute(builder: (context) => const CustomerScreen()),
         );
       } else if (role == "employee") {
-        // لاحقًا تضيف EmployeeScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const EmployeeScreen()),
+        );
       } else if (role == "admin") {
         Navigator.pushReplacement(
           context,
