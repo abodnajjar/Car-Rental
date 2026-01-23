@@ -393,6 +393,7 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
         return {
             "message": "Booking status updated",
             "booking_id": booking_id,
+            
             "new_status": new_status
         }
 
