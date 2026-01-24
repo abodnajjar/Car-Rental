@@ -37,21 +37,25 @@ CREATE TABLE car_prices (
         ON DELETE CASCADE
 );
 
-CREATE TABLE rentals (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    employee_id INT,
-    car_id INT NOT NULL,
-    pickup_location VARCHAR(100),
-    dropoff_location VARCHAR(100),
-    start_date DATETIME,
-    end_date DATETIME,
-    total_price DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (employee_id) REFERENCES users(id),
-    FOREIGN KEY (car_id) REFERENCES cars(id)
+CREATE TABLE `rentals` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int NOT NULL,
+  `employee_id` int DEFAULT NULL,
+  `car_id` int NOT NULL,
+  `pickup_location` varchar(100) DEFAULT NULL,
+  `dropoff_location` varchar(100) DEFAULT NULL,
+  `start_date` datetime DEFAULT NULL,
+  `end_date` datetime DEFAULT NULL,
+  `total_price` decimal(10,2) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `status` varchar(20) NOT NULL DEFAULT 'pending',
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `employee_id` (`employee_id`),
+  KEY `car_id` (`car_id`),
+  CONSTRAINT `rentals_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `rentals_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `rentals_ibfk_3` FOREIGN KEY (`car_id`) REFERENCES `cars` (`id`)
 );
 
 CREATE TABLE payments (
