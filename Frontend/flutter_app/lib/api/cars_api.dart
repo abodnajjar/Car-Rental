@@ -45,6 +45,7 @@ class CarsApi {
     final form = FormData.fromMap({"image": file});
     await _dio.post("/cars/$carId/image", data: form);
   }
+
    static Future<Car> updateCar(int carId, Map<String, dynamic> data) async {
     final res = await _dio.put("/cars/$carId", data: data);
     return Car.fromJson(res.data);
