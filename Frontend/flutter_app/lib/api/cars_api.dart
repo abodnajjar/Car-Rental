@@ -6,22 +6,22 @@ class CarsApi {
     BaseOptions(baseUrl: "http://127.0.0.1:8000"),
   );
 
-  static Future<List<Car>> getCars() async {
-    final res = await _dio.get("/admin/cars");
-    return (res.data as List)
-        .map((e) => Car.fromJson(e))
-        .toList();
+    static Future<List<Car>> getCars() async {
+    final res = await _dio.get("/cars");
+    return (res.data as List).map((e) => Car.fromJson(e)).toList();
   }
 
-  static Future<void> deleteCar(int id) async {
-    await _dio.delete("/admin/cars/$id");
+  static Future<void> deleteCar(int carId) async {
+    await _dio.delete("/cars/$carId");
   }
 
-  static Future<void> addCar(Map<String, dynamic> data) async {
-    await _dio.post("/admin/cars", data: data);
+    static Future<Car> addCar(Map<String, dynamic> data) async {
+    final res = await _dio.post("/cars", data: data);
+    return Car.fromJson(res.data);
   }
 
-  static Future<void> updateCar(int id, Map<String, dynamic> data) async {
-    await _dio.put("/admin/cars/$id", data: data);
+   static Future<Car> updateCar(int carId, Map<String, dynamic> data) async {
+    final res = await _dio.put("/cars/$carId", data: data);
+    return Car.fromJson(res.data);
   }
 }
