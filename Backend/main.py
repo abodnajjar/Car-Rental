@@ -8,8 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes.notifications import router as notifications_router
 from routes.bookings import router as bookings_router
 app = FastAPI(title="Car Rental Backend")
-
-
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth_router)
 app.include_router(users_router)

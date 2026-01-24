@@ -26,7 +26,7 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
 
   Future<void> _loadPrices() async {
     try {
-      final data = await CarPricesApi.getCarPrices(widget.car.id);
+      final data = await CarPricesApi.getCarPrices(widget.car.carId);
 
       for (final p in data) {
         _controllers[p.day] =
@@ -70,7 +70,7 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
 
     for (final p in _prices) {
       await CarPricesApi.updateCarPrice(
-        carId: widget.car.id,
+        carId: widget.car.carId,
         day: p.day,
         price: double.parse(_controllers[p.day]!.text),
       );

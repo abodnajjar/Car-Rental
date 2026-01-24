@@ -31,7 +31,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
     _yearController =
         TextEditingController(text: widget.car.year.toString());
     _imageController =
-        TextEditingController(text: widget.car.image);
+        TextEditingController(text: widget.car.imageUrl);
 
     _status = widget.car.status;
   }
@@ -51,7 +51,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
     setState(() => _loading = true);
 
     try {
-      await CarsApi.updateCar(widget.car.id, {
+      await CarsApi.updateCar(widget.car.carId, {
         "brand": _brandController.text,
         "model": _modelController.text,
         "category": _categoryController.text,
