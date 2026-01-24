@@ -7,8 +7,6 @@ from routes.cars import router as cars_router
 from fastapi.middleware.cors import CORSMiddleware
 from routes.notifications import router as notifications_router
 from routes.bookings import router as bookings_router
-from routes.car_prices import router as car_prices_router
-from routes.car_prices import router as car_prices_router
 app = FastAPI(title="Car Rental Backend")
 
 
@@ -20,9 +18,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(car_prices_router)
+
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-app.include_router(car_prices_router)
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(auth_router)
 app.include_router(users_router)
