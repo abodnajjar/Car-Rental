@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from db_conection import get_connection
+from datetime import datetime, time
 from datetime import datetime, timedelta, date, time
 from schemas.customer_booking import CustomerBookingsResponse
 from schemas.booking import BookingDraftIn, BookingQuoteOut, BookingConfirmIn
@@ -153,7 +154,9 @@ def confirm_booking(payload: BookingConfirmIn):
 
         check_car_available(cur, payload.car_id, start_dt, end_dt)
 
-        days, total, breakdown = calculate_price(cur, payload.car_id, payload.start_date, payload.end_date)
+        days, total, breakdown = calculate_price(
+            cur, payload.car_id, payload.start_date, payload.end_date
+        )
 
         cur.execute(
             """
@@ -177,6 +180,16 @@ def confirm_booking(payload: BookingConfirmIn):
         )
 
         booking_id = cur.lastrowid
+
+        cur.execute(
+            """
+            UPDATE cars
+            SET status = false
+            WHERE id = %s
+            """,
+            (payload.car_id,)
+        )
+
         payment_status = "pending" if method == "cash" else "paid"
 
         cur.execute(
@@ -202,6 +215,7 @@ def confirm_booking(payload: BookingConfirmIn):
 
     finally:
         conn.close()
+
 # get for the customer all booking with know the id
 @router.get("/customer/{customer_id}", response_model=CustomerBookingsResponse)
 def get_customer_bookings(customer_id: int):
