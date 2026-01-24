@@ -9,6 +9,7 @@ class Car {
   final String imageUrl;
   final List<CarPrice> prices;
 
+
   Car({
     required this.carId,
     required this.brand,
@@ -18,11 +19,14 @@ class Car {
     required this.status,
     required this.imageUrl,
     required this.prices,
+
   });
 
   factory Car.fromJson(Map<String, dynamic> json) {
     return Car(
-      carId: json["car_id"],
+       carId: (json["car_id"] as num?)?.toInt()
+        ?? (json["id"] as num?)?.toInt()
+        ?? 0,
       brand: json["brand"] ?? "",
       model: json["model"] ?? "",
       category: json["category"] ?? "",

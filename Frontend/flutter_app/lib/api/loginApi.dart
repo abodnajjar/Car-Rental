@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 class LoginApi {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://localhost:8000', 
+       baseUrl:"http://127.0.0.1:8000",
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
@@ -19,11 +19,15 @@ class LoginApi {
     try {
       final res = await _dio.post('/auth/login', data: data);
 
-      
+
       return Map<String, dynamic>.from(res.data);
-    } on DioException catch (e) {
-      final msg = e.response?.data?["detail"]?.toString() ?? "Login failed";
-      throw Exception(msg);
-    }
+    }  on DioException catch (e) {
+  print("STATUS: ${e.response?.statusCode}");
+  print("DATA: ${e.response?.data}");
+  print("MESSAGE: ${e.message}");
+  print("TYPE: ${e.type}");
+  throw Exception(e.response?.data.toString() ?? e.message ?? "Login failed");
+}
+
   }
 }

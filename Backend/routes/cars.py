@@ -1,7 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from db_conection import get_connection
 from schemas.car import CarOut, CarCreate,CarUpdate
-
+from fastapi import UploadFile, File, HTTPException
+import os, shutil
+UPLOAD_DIR = "uploads/cars"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 router = APIRouter(tags=["Cars"])
 # return the number of cars we have
 @router.get("/cars/count")
@@ -214,3 +217,28 @@ def delete_car(car_id: int):
 
     finally:
         conn.close()
+@router.post("/cars/{car_id}/image")
+def upload_car_image(car_id: int, image: UploadFile = File(...)):
+    ext = os.path.splitext(image.filename)[1].lower()
+    if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
+        raise HTTPException(status_code=400, detail="Unsupported image type")
+
+    # نحفظ باسم car_id.jpg
+    filename = f"{car_id}.jpg"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(image.file, buffer)
+
+    image_url = f"/uploads/cars/{filename}"
+
+    # OPTIONAL: تحديث DB مباشرة هون (بدل ما تعمل update من Flutter)
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute("UPDATE cars SET image_url=%s WHERE id=%s", (image_url, car_id))
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {"image_url": image_url}

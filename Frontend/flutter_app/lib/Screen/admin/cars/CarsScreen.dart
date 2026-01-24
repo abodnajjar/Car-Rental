@@ -17,21 +17,31 @@ class _CarsScreenState extends State<CarsScreen> {
   List<Car> _filteredCars = [];
   bool _loading = true;
 
+  String get _apiBaseUrl => "http://127.0.0.1:8000";
+
+  String _buildImageUrl(String img) {
+    var v = img.trim();
+
+    v = v.replaceAll('"', '').replaceAll("'", '');
+
+    if (v.isEmpty) return "";
+
+    if (v.startsWith("http://") || v.startsWith("https://")) return v;
+
+    final path = v.startsWith("/") ? v : "/$v";
+    return "$_apiBaseUrl$path";
+  }
+
   @override
   void initState() {
     super.initState();
     _loadCars();
   }
 
-  // ================================
-  // Load cars from API
-  // ================================
   Future<void> _loadCars() async {
     try {
       debugPrint("CALLING CARS API...");
-
       final data = await CarsApi.getCars();
-
       debugPrint("CARS COUNT: ${data.length}");
 
       if (!mounted) return;
@@ -48,30 +58,23 @@ class _CarsScreenState extends State<CarsScreen> {
     }
   }
 
-  // ================================
-  // Search filter
-  // ================================
   void _onSearch(String value) {
     setState(() {
+      final q = value.toLowerCase();
       _filteredCars = _allCars.where((c) {
-        final q = value.toLowerCase();
         return c.brand.toLowerCase().contains(q) ||
             c.model.toLowerCase().contains(q);
       }).toList();
     });
   }
 
-  // ================================
-  // Confirm delete
-  // ================================
   void _confirmDelete(Car car) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Delete Car"),
-        content: Text(
-          "Are you sure you want to delete ${car.brand} ${car.model}?",
-        ),
+        content:
+            Text("Are you sure you want to delete ${car.brand} ${car.model}?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -81,7 +84,7 @@ class _CarsScreenState extends State<CarsScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               Navigator.pop(context);
-              await _deleteCar(car.id);
+              await _deleteCar(car.carId);
             },
             child: const Text("Delete"),
           ),
@@ -90,25 +93,21 @@ class _CarsScreenState extends State<CarsScreen> {
     );
   }
 
-  // ================================
-  // Delete car
-  // ================================
   Future<void> _deleteCar(int id) async {
     try {
       await CarsApi.deleteCar(id);
-
       if (!mounted) return;
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Car deleted successfully")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Car deleted successfully")),
+      );
 
-      _loadCars(); // 🔄 refresh
+      _loadCars();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
     }
   }
 
@@ -118,7 +117,6 @@ class _CarsScreenState extends State<CarsScreen> {
       backgroundColor: Colors.grey.shade100,
       body: Column(
         children: [
-          // 🔍 Search
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -135,27 +133,21 @@ class _CarsScreenState extends State<CarsScreen> {
               ),
             ),
           ),
-
-          // ================================
-          // Cars List
-          // ================================
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredCars.isEmpty
-                ? const Center(child: Text("No cars found"))
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _filteredCars.length,
-                    itemBuilder: (context, index) {
-                      return _carCard(_filteredCars[index]);
-                    },
-                  ),
+                    ? const Center(child: Text("No cars found"))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _filteredCars.length,
+                        itemBuilder: (context, index) {
+                          return _carCard(_filteredCars[index]);
+                        },
+                      ),
           ),
         ],
       ),
-
-      // ➕ Add Car
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.grey.shade300,
         onPressed: () async {
@@ -163,30 +155,23 @@ class _CarsScreenState extends State<CarsScreen> {
             context,
             MaterialPageRoute(builder: (_) => const AddCarScreen()),
           );
-
-          if (added == true && mounted) {
-            _loadCars();
-          }
+          if (added == true && mounted) _loadCars();
         },
         child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
 
-  // ================================
-  // Car Card
-  // ================================
   Widget _carCard(Car car) {
+    final imgUrl = _buildImageUrl(car.imageUrl);
+
     return InkWell(
       onTap: () async {
         final updated = await Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => EditCarScreen(car: car)),
         );
-
-        if (updated == true && mounted) {
-          _loadCars();
-        }
+        if (updated == true && mounted) _loadCars();
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
@@ -198,27 +183,30 @@ class _CarsScreenState extends State<CarsScreen> {
         ),
         child: Row(
           children: [
+            // ✅✅✅ Image like your design (Container + DecorationImage)
             Container(
-              width: 70,
-              height: 60,
+              width: 110,
+              height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.grey.shade200,
-                image: car.image.isNotEmpty
+                image: imgUrl.isNotEmpty
                     ? DecorationImage(
-                        image: NetworkImage(
-                          "http://10.0.2.2:8000/${car.image}",
-                        ),
+                        image: NetworkImage(imgUrl),
                         fit: BoxFit.cover,
+                        onError: (exception, stackTrace) {
+                          debugPrint("IMAGE ERROR: $exception");
+                        },
                       )
                     : null,
               ),
-              child: car.image.isEmpty
-                  ? const Icon(Icons.directions_car, color: Colors.grey)
+              child: imgUrl.isEmpty
+                  ? const Icon(Icons.directions_car,
+                      size: 40, color: Colors.grey)
                   : null,
             ),
 
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
 
             Expanded(
               child: Column(
@@ -231,11 +219,12 @@ class _CarsScreenState extends State<CarsScreen> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const SizedBox(height: 2),
                   Text(
                     "${car.category} • ${car.year}",
                     style: const TextStyle(color: Colors.grey),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     car.status ? "Available" : "Not Available",
                     style: TextStyle(
