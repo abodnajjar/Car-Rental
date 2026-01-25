@@ -1,6 +1,6 @@
 import '../model/booking_model.dart';
 
-const bool kUseMockData = true;
+const bool kUseMockData = false;
 
 class MockBookingData {
   static final DateTime _seedNow = DateTime.now();

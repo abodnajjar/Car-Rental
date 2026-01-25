@@ -79,32 +79,34 @@ def calculate_price(cur, car_id: int, start_date: date, end_date: date):
     return len(days), total, breakdown
 
 
-def _status_notification(status: str, booking_id: int) -> tuple[str, str]:
+def _status_notification(status: str, booking_id: int, car_brand: str = "", car_model: str = "", price: float = 0.0) -> tuple[str, str]:
     status = status.lower().strip()
+    car_info = f"{car_brand} {car_model}" if car_brand else "Your car"
+    
     if status in ("approved", "accepted"):
         return (
             "Booking approved",
-            f"Your booking #{booking_id} has been approved.",
+            f"Your booking #{booking_id} for {car_info} has been approved! Total: ${price:.2f}",
         )
     if status in ("cancelled", "rejected"):
         return (
             "Booking rejected",
-            f"Your booking #{booking_id} has been rejected.",
+            f"Your booking #{booking_id} for {car_info} has been rejected.",
         )
     if status == "active":
         return (
             "Car pickup confirmed",
-            f"Your booking #{booking_id} is now active. Enjoy your ride!",
+            f"Your booking #{booking_id} for {car_info} is now active. Enjoy your ride!",
         )
     if status == "completed":
         return (
             "Rental completed",
-            f"Your booking #{booking_id} has been completed. Thank you for choosing CarRental.",
+            f"Your booking #{booking_id} for {car_info} has been completed. Thank you for choosing CarRental.",
         )
     if status == "pending":
         return (
             "Booking pending",
-            f"Your booking #{booking_id} is pending review.",
+            f"Your booking #{booking_id} for {car_info} is pending review.",
         )
     return ("Booking update", f"Your booking #{booking_id} status is now '{status}'.")
 
@@ -478,15 +480,23 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
     try:
         cur = conn.cursor()
 
+        # Get booking + car details
         cur.execute(
-            "SELECT id, user_id FROM rentals WHERE id=%s LIMIT 1",
+            """
+            SELECT r.id, r.user_id, c.brand, c.model, r.total_price 
+            FROM rentals r
+            JOIN cars c ON c.id = r.car_id
+            WHERE r.id=%s LIMIT 1
+            """,
             (booking_id,)
         )
         row = cur.fetchone()
         if not row:
             raise HTTPException(404, "Booking not found")
-        user_id = row[1]
+        
+        booking_id_check, user_id, car_brand, car_model, total_price = row
 
+        # Update booking status
         if employee_id is not None:
             cur.execute(
                 "UPDATE rentals SET status=%s, employee_id=%s WHERE id=%s",
@@ -498,7 +508,8 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
                 (new_status, booking_id)
             )
 
-        title, message = _status_notification(new_status, booking_id)
+        # Create notification WITH car details
+        title, message = _status_notification(new_status, booking_id, car_brand, car_model, total_price)
         cur.execute(
             """
             SELECT id FROM notifications
@@ -521,7 +532,6 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
         return {
             "message": "Booking status updated",
             "booking_id": booking_id,
-            
             "new_status": new_status
         }
 
