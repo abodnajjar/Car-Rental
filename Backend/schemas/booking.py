@@ -25,6 +25,7 @@ class BookingConfirmIn(BookingDraftIn):
     payment_method: str  # cash / visa
 
 class BookingOut(BaseModel):
+
     booking_id: int
     user_id: int
     employee_id: Optional[int] = None

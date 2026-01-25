@@ -6,10 +6,7 @@ import '../../mock/mock_booking_data.dart';
 class EmployeeBookingDetailsScreen extends StatefulWidget {
   final int bookingId;
 
-  const EmployeeBookingDetailsScreen({
-    super.key,
-    required this.bookingId,
-  });
+  const EmployeeBookingDetailsScreen({super.key, required this.bookingId});
 
   @override
   State<EmployeeBookingDetailsScreen> createState() =>
@@ -96,7 +93,6 @@ class _EmployeeBookingDetailsScreenState
           ),
         );
 
-        // Pop back and indicate refresh is needed
         Navigator.pop(context, {
           'bookingId': widget.bookingId,
           'status': status,
@@ -120,10 +116,23 @@ class _EmployeeBookingDetailsScreenState
     }
   }
 
- String _formatDate(DateTime dt) {
-  final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return '${months[dt.month - 1]} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
-}
+  String _formatDate(DateTime dt) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[dt.month - 1]} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
+  }
 
   int _calculateDays() {
     if (_details == null) return 0;
@@ -141,23 +150,22 @@ class _EmployeeBookingDetailsScreenState
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 60),
-                      const SizedBox(height: 16),
-                      Text(_error!),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadDetails,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.red, size: 60),
+                  const SizedBox(height: 16),
+                  Text(_error!),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _loadDetails,
+                    child: const Text('Retry'),
                   ),
-                )
-              : _buildContent(),
+                ],
+              ),
+            )
+          : _buildContent(),
     );
   }
 
@@ -209,14 +217,15 @@ class _EmployeeBookingDetailsScreenState
               _infoRow("End Date", _formatDate(details.endDate)),
               _infoRow("Total Days", "$totalDays days"),
               _infoRow(
-                  "Total Price", "\$${details.totalPrice.toStringAsFixed(2)}"),
+                "Total Price",
+                "\$${details.totalPrice.toStringAsFixed(2)}",
+              ),
               _statusRow(details.bookingStatus),
             ],
           ),
 
           const SizedBox(height: 30),
 
-          // Action Buttons (only show if status is 'pending')
           if (details.bookingStatus.toLowerCase() == 'pending') ...[
             _actionButton(
               text: _isUpdating ? "Processing..." : "Accept",
@@ -295,10 +304,7 @@ class _EmployeeBookingDetailsScreenState
     );
   }
 
-  Widget _section({
-    required String title,
-    required List<Widget> children,
-  }) {
+  Widget _section({required String title, required List<Widget> children}) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 20),
@@ -306,19 +312,14 @@ class _EmployeeBookingDetailsScreenState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 6),
-        ],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const Divider(height: 24),
           ...children,
@@ -332,29 +333,25 @@ class _EmployeeBookingDetailsScreenState
 
     final imageWidget = (imageUrl != null && imageUrl.isNotEmpty)
         ? (imageUrl.startsWith('http')
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => const Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-              )
-            : Image.asset(
-                'assets/car_images/$imageUrl',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => const Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-              ))
-        : const Icon(
-            Icons.directions_car,
-            size: 80,
-            color: Colors.grey,
-          );
+              ? Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stack) => const Icon(
+                    Icons.directions_car,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                )
+              : Image.asset(
+                  'assets/car_images/$imageUrl',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stack) => const Icon(
+                    Icons.directions_car,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                ))
+        : const Icon(Icons.directions_car, size: 80, color: Colors.grey);
 
     return Container(
       width: double.infinity,
@@ -364,10 +361,7 @@ class _EmployeeBookingDetailsScreenState
         borderRadius: borderRadius,
         color: Colors.grey[300],
       ),
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        child: imageWidget,
-      ),
+      child: ClipRRect(borderRadius: borderRadius, child: imageWidget),
     );
   }
 
@@ -392,8 +386,9 @@ class _EmployeeBookingDetailsScreenState
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor:
-                    isDisabled ? Colors.grey.shade300 : Colors.blue.shade50,
+                backgroundColor: isDisabled
+                    ? Colors.grey.shade300
+                    : Colors.blue.shade50,
                 child: Icon(
                   icon,
                   color: isDisabled ? Colors.grey : Colors.blueGrey,
@@ -436,9 +431,7 @@ class _EmployeeBookingDetailsScreenState
     final hint = kUseMockData
         ? 'Mock: $message.'
         : 'This action needs a backend endpoint.';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(hint)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(hint)));
   }
 
   Widget _infoRow(String label, String value) {
@@ -448,10 +441,7 @@ class _EmployeeBookingDetailsScreenState
         children: [
           Expanded(
             flex: 4,
-            child: Text(
-              label,
-              style: const TextStyle(color: Colors.grey),
-            ),
+            child: Text(label, style: const TextStyle(color: Colors.grey)),
           ),
           Expanded(
             flex: 6,
@@ -487,10 +477,7 @@ class _EmployeeBookingDetailsScreenState
       children: [
         const Expanded(
           flex: 4,
-          child: Text(
-            "Status",
-            style: TextStyle(color: Colors.grey),
-          ),
+          child: Text("Status", style: TextStyle(color: Colors.grey)),
         ),
         Expanded(
           flex: 6,
@@ -502,10 +489,7 @@ class _EmployeeBookingDetailsScreenState
             ),
             child: Text(
               status,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(color: color, fontWeight: FontWeight.bold),
             ),
           ),
         ),

@@ -140,14 +140,11 @@ class _BookingScreenState extends State<BookingScreen> {
         const SnackBar(content: Text("Booking confirmed successfully")),
       );
 
-Navigator.pushAndRemoveUntil(
-  context,
-  MaterialPageRoute(
-    builder: (context) => const CustomerScreen(
-    ),
-  ),
-  (route) => false,
-);
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const CustomerScreen()),
+        (route) => false,
+      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to confirm booking")),
@@ -236,7 +233,6 @@ Navigator.pushAndRemoveUntil(
               ),
               const SizedBox(height: 10),
 
-
               const SizedBox(height: 24),
 
               SizedBox(
@@ -247,22 +243,22 @@ Navigator.pushAndRemoveUntil(
                     backgroundColor: Colors.green,
                   ),
 
-onPressed: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PaymentScreen(
-         userId: _userId!,
-        car: widget.car,
-        pickupLocation: _pickupController.text,
-        dropoffLocation: _dropoffController.text,
-        startDate: _startDate!,
-        endDate: _endDate!,
-        totalPrice: _totalPrice,
-      ),
-    ),
-  );
-},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PaymentScreen(
+                          userId: _userId!,
+                          car: widget.car,
+                          pickupLocation: _pickupController.text,
+                          dropoffLocation: _dropoffController.text,
+                          startDate: _startDate!,
+                          endDate: _endDate!,
+                          totalPrice: _totalPrice,
+                        ),
+                      ),
+                    );
+                  },
                   child: const Text("Confirm Booking"),
                 ),
               ),

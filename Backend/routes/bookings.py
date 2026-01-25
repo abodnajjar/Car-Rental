@@ -518,3 +518,6 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
 
     finally:
         conn.close()
+
+
+        

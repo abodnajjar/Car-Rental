@@ -36,9 +36,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   bool _loading = false;
 
-  // ==============================
-  // Pay Now (Mock)
-  // ==============================
+  
   Future<void> _payNow() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -52,7 +50,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         dropoffLocation: widget.dropoffLocation,
         startDate: widget.startDate,
         endDate: widget.endDate,
-        paymentMethod: "visa", // ✅ Online payment
+        paymentMethod: "visa", 
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -75,9 +73,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
-  // ==============================
-  // UI
-  // ==============================
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,7 +98,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
               const SizedBox(height: 30),
 
-              // ================= Card Number =================
               TextFormField(
                 controller: _cardController,
                 keyboardType: TextInputType.number,
@@ -124,7 +119,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
               const SizedBox(height: 12),
 
-              // ================= Expiry =================
               TextFormField(
                 controller: _expiryController,
                 decoration: const InputDecoration(
@@ -146,7 +140,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
               const SizedBox(height: 12),
 
-              // ================= CVV =================
               TextFormField(
                 controller: _cvvController,
                 keyboardType: TextInputType.number,
@@ -169,7 +162,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
               const Spacer(),
 
-              // ================= Pay Button =================
               SizedBox(
                 width: double.infinity,
                 height: 50,
