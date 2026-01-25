@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 import '../model/car_price_model.dart';
 
 class CarPricesApi {
   static final Dio _dio = Dio(
-    BaseOptions(baseUrl: "http://127.0.0.1:8000"),
+    BaseOptions(baseUrl: ApiConfig.baseUrl),
   );
 
   // ===============================
