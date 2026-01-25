@@ -203,14 +203,15 @@ class _LoginScreenState extends State<LoginScreen> {
           context,
           MaterialPageRoute(builder: (context) => const EmployeeScreen()),
         );
-      } else if (role == "admin") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
+      } 
+       else if (role == "admin") {
+         Navigator.pushReplacement(
+           context,
+           MaterialPageRoute(
             builder: (context) => const AdminLayout(),
-          ),
-        );
-      }
+         ),
+         );
+       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
