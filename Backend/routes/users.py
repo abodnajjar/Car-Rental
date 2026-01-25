@@ -4,9 +4,6 @@ from db_conection import get_connection
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# =====================================================
-# GET all employees (Admin)
-# =====================================================
 @router.get("/employees", response_model=list[UserOut])
 def get_employees():
     conn = get_connection()
@@ -34,9 +31,6 @@ def get_employees():
         conn.close()
 
 
-# =====================================================
-# GET customers count
-# =====================================================
 @router.get("/customers/count")
 def get_customers_count():
     conn = get_connection()
@@ -52,9 +46,6 @@ def get_customers_count():
         conn.close()
 
 
-# =====================================================
-# GET employees count
-# =====================================================
 @router.get("/employees/count")
 def get_employees_count():
     conn = get_connection()
@@ -70,9 +61,6 @@ def get_employees_count():
         conn.close()
 
 
-# =====================================================
-# GET user by id
-# =====================================================
 @router.get("/{user_id}", response_model=UserOut)
 def get_user_by_id(user_id: int):
     conn = get_connection()
@@ -102,9 +90,6 @@ def get_user_by_id(user_id: int):
         conn.close()
 
 
-# =====================================================
-# UPDATE user (general)
-# =====================================================
 @router.put("/{user_id}", response_model=UserOut)
 def update_user(user_id: int, payload: UserUpdate):
     data = payload.model_dump(exclude_none=True)
@@ -147,9 +132,6 @@ def update_user(user_id: int, payload: UserUpdate):
         conn.close()
 
 
-# =====================================================
-# UPDATE employee salary (Admin)
-# =====================================================
 @router.put("/employees/{user_id}/salary", response_model=UserOut)
 def update_employee_salary(user_id: int, salary: float):
     conn = get_connection()
@@ -188,9 +170,6 @@ def update_employee_salary(user_id: int, salary: float):
         conn.close()
 
 
-# =====================================================
-# DELETE employee (Admin)
-# =====================================================
 @router.delete("/employees/{user_id}")
 def delete_employee(user_id: int):
     conn = get_connection()

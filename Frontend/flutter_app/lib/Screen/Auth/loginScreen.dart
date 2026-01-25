@@ -60,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // حقل الايميل
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: SizedBox(
@@ -82,7 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              // حقل الباسورد
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
                 child: SizedBox(
@@ -107,7 +105,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
-              // زر تسجيل الدخول
               SizedBox(
                 width: 350,
                 height: 50,
@@ -134,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 30),
 
-              // رابط تسجيل حساب جديد
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -186,13 +182,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final role = response['role'] as String;
       final userId=response['user_id'] as int;
-      // حفظ بيانات بسيطة
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("role", role);
       await prefs.setBool("isLoggedIn", true);
       await prefs.setInt("user_id", userId);
 
-      // التوجيه حسب الدور باستخدام push
       if (role == "customer") {
         Navigator.push(
           context,

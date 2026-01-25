@@ -32,10 +32,9 @@ class _AddCarScreenState extends State<AddCarScreen> {
   bool _status = true;
   bool _loading = false;
 
-  // ✅ Web + Mobile image data
-  Uint8List? _imageBytes; // web
-  String? _imagePath; // mobile
-  String? _imageName; // both
+  Uint8List? _imageBytes;
+  String? _imagePath;
+  String? _imageName;
 
   String _dayLabel(String day) => day[0].toUpperCase() + day.substring(1);
 
@@ -46,7 +45,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
   Future<void> _pickImage() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
-      withData: kIsWeb, // ✅ بس للويب نحتاج bytes
+      withData: kIsWeb,
     );
 
     if (result == null) return;
@@ -56,10 +55,8 @@ class _AddCarScreenState extends State<AddCarScreen> {
     setState(() {
       _imageName = file.name;
 
-      // ✅ web
       _imageBytes = kIsWeb ? file.bytes : null;
 
-      // ✅ mobile
       _imagePath = !kIsWeb ? file.path : null;
     });
   }
@@ -79,7 +76,6 @@ class _AddCarScreenState extends State<AddCarScreen> {
       return false;
     }
 
-    // ✅ image validation (web/mobile)
     if (_imageName == null ||
         (kIsWeb ? _imageBytes == null : _imagePath == null)) {
       _showMessage("Please choose an image");
@@ -110,26 +106,28 @@ Future<void> _submit() async {
       };
     }).toList();
 
-    // 1️⃣ Add car (بدون صورة)
-    final created = await CarsApi.addCar({
-      "brand": _brandController.text.trim(),
-      "model": _modelController.text.trim(),
-      "category": _categoryController.text.trim(),
-      "year": year,
-      "status": _status,
-      "image_url": "", // 👈 خليها فاضية
-      "prices": prices,
-    });
+      final created = await CarsApi.addCar({
+        "brand": _brandController.text.trim(),
+        "model": _modelController.text.trim(),
+        "category": _categoryController.text.trim(),
+        "year": year,
+        "status": _status,
+        "image_url": "",
+        "prices": prices,
+      });
 
     final carId = created.carId;
 
-    // 2️⃣ Upload image (السيرفر هو اللي بحدث DB)
-    await CarsApi.uploadCarImage(
-      carId,
-      fileName: _imageName!,
-      bytes: _imageBytes,
-      filePath: _imagePath,
-    );
+      await CarsApi.uploadCarImage(
+        carId,
+        fileName: _imageName!,
+        bytes: _imageBytes,
+        filePath: _imagePath,
+      );
+
+      await CarsApi.updateCar(carId, {
+        "image_url": "/uploads/cars/$carId.jpg",
+      });
 
     if (!mounted) return;
     Navigator.pop(context, true);
@@ -190,7 +188,6 @@ Future<void> _submit() async {
             ),
             const SizedBox(height: 14),
 
-            // ✅ IMAGE SECTION + PREVIEW
             _sectionCard(
               title: "Image",
               child: Column(

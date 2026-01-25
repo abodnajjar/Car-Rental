@@ -13,7 +13,6 @@ class BookingsApi {
     ),
   );
 
-  /// POST /bookings/price
   static Future<Map<String, dynamic>> calculatePrice({
     required int userId,
     required int carId,
@@ -42,7 +41,6 @@ class BookingsApi {
     }
   }
 
-  /// POST /bookings/confirm
   static Future<void> confirmBooking({
     required int userId,
     required int carId,
@@ -72,7 +70,6 @@ class BookingsApi {
     }
   }
 
-  /// GET /bookings/customer/{customer_id}
   static Future<List<BookingHistoryItem>> getBookingHistory(int customerId) async {
     try {
       final res = await _dio.get('/bookings/customer/$customerId');
@@ -86,7 +83,6 @@ class BookingsApi {
     }
   }
 
-  /// GET /bookings/pending
   static Future<List<PendingBooking>> getPendingBookings() async {
     try {
       final res = await _dio.get('/bookings/pending');
@@ -98,7 +94,6 @@ class BookingsApi {
     }
   }
 
-  /// GET /bookings/status/{status}
   static Future<List<PendingBooking>> getBookingsByStatus(String status) async {
     try {
       final res = await _dio.get('/bookings/status/$status');
@@ -110,7 +105,6 @@ class BookingsApi {
     }
   }
 
-  /// GET /bookings/details/{booking_id}
   static Future<BookingDetails> getBookingDetails(int bookingId) async {
     try {
       final res = await _dio.get('/bookings/details/$bookingId');
@@ -122,7 +116,6 @@ class BookingsApi {
     }
   }
 
-  /// PUT /bookings/{booking_id}/status
   static Future<void> updateBookingStatus(
     int bookingId,
     String status, {
@@ -143,7 +136,6 @@ class BookingsApi {
     }
   }
 
-  /// PUT /cars/{car_id}/availability
   static Future<void> updateCarAvailability(int carId, bool isAvailable) async {
     try {
       await _dio.put(

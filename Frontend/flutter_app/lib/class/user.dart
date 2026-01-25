@@ -27,14 +27,6 @@ class User {
   String? getDrivingLicenseNo() => drivingLicenseNo;
   double? getSalary() => salary;
 
-  // Setters (اختياري)
-  // void setName(String name) => fullName = name;
-  // void setEmail(String value) => email = value;
-  // void setPhone(String value) => phone = value;
-  // void setRole(String value) => role = value;
-  // void setDrivingLicenseNo(String? value) => drivingLicenseNo = value;
-  // void setSalary(double? value) => salary = value;
-
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       uid: json['uid'].toString(),
