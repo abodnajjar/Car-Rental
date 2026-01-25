@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../api/bookings_api.dart';
 import '../../model/booking_model.dart';
 import '../../mock/mock_booking_data.dart';
+import '../../config/api_config.dart';
 
 class EmployeeBookingDetailsScreen extends StatefulWidget {
   final int bookingId;
@@ -197,6 +198,7 @@ class _EmployeeBookingDetailsScreenState
     if (_details == null) return 0;
     return _details!.endDate.difference(_details!.startDate).inDays;
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -393,51 +395,60 @@ class _EmployeeBookingDetailsScreenState
       ),
     );
   }
+  String _buildImageUrl(String img) {
+  var v = img.trim();
+  if (v.isEmpty) return "";
 
-  Widget _carImage(String? imageUrl) {
-    final borderRadius = BorderRadius.circular(16);
+  if (v.startsWith("http")) return v;
 
-    final imageWidget = (imageUrl != null && imageUrl.isNotEmpty)
-        ? (imageUrl.startsWith('http')
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => const Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-              )
-            : Image.asset(
-                'assets/car_images/$imageUrl',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => const Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-              ))
-        : const Icon(
-            Icons.directions_car,
-            size: 80,
-            color: Colors.grey,
-          );
-
-    return Container(
-      width: double.infinity,
-      height: 200,
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        color: Colors.grey[300],
-      ),
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        child: imageWidget,
-      ),
-    );
+  if (v.startsWith("/uploads")) {
+    return "${ApiConfig.baseUrl}$v";
   }
 
+  return "${ApiConfig.baseUrl}/uploads/cars/$v";
+}
+
+ Widget _carImage(String? imageUrl) {
+  final borderRadius = BorderRadius.circular(16);
+
+  final imgUrl = (imageUrl != null && imageUrl.isNotEmpty)
+      ? _buildImageUrl(imageUrl)
+      : "";
+
+  return Container(
+    width: double.infinity,
+    height: 200,
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      borderRadius: borderRadius,
+      color: Colors.grey[300],
+    ),
+    child: ClipRRect(
+      borderRadius: borderRadius,
+      child: imgUrl.isNotEmpty
+          ? Image.network(
+              imgUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(
+                    Icons.directions_car,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                );
+              },
+            )
+          : const Center(
+              child: Icon(
+                Icons.directions_car,
+                size: 80,
+                color: Colors.grey,
+              ),
+            ),
+    ),
+  );
+}
   Widget _actionTile({
     required IconData icon,
     required String title,

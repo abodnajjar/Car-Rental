@@ -9,13 +9,32 @@ class BookingHistoryScreen extends StatefulWidget {
   const BookingHistoryScreen({super.key});
 
   @override
-  State<BookingHistoryScreen> createState() => _BookingHistoryScreenState();
+  State<BookingHistoryScreen> createState() =>
+      _BookingHistoryScreenState();
 }
 
-class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
+class _BookingHistoryScreenState
+    extends State<BookingHistoryScreen> {
   bool _loading = true;
   List<BookingHistoryItem> _bookings = [];
   int? _userId;
+
+  String get _apiBaseUrl => ApiConfig.baseUrl;
+
+  String _buildImageUrl(String? img) {
+    if (img == null) return "";
+
+    var v = img.trim();
+    if (v.isEmpty) return "";
+
+    if (v.startsWith("http")) return v;
+
+    if (v.startsWith("/uploads")) {
+      return "$_apiBaseUrl$v";
+    }
+
+    return "$_apiBaseUrl/uploads/cars/$v";
+  }
 
   @override
   void initState() {
@@ -23,9 +42,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     _loadUserAndBookings();
   }
 
-  // =========================
-  // Load user id + bookings
-  // =========================
   Future<void> _loadUserAndBookings() async {
     final prefs = await SharedPreferences.getInstance();
     _userId = prefs.getInt("user_id");
@@ -36,7 +52,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     }
 
     try {
-      final data = await BookingsApi.getBookingHistory(_userId!);
+      final data =
+          await BookingsApi.getBookingHistory(_userId!);
       setState(() {
         _bookings = data;
         _loading = false;
@@ -49,9 +66,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     }
   }
 
-  // =========================
-  // UI
-  // =========================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,21 +77,22 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _bookings.isEmpty
-              ? const Center(child: Text("No bookings found"))
+              ? const Center(
+                  child: Text("No bookings found"),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _bookings.length,
                   itemBuilder: (context, index) {
-                    return _bookingCard(_bookings[index]);
+                    return _bookingCard(
+                        _bookings[index]);
                   },
                 ),
     );
   }
 
-  // =========================
-  // Booking Card
-  // =========================
-  Widget _bookingCard(BookingHistoryItem booking) {
+  Widget _bookingCard(
+      BookingHistoryItem booking) {
     Color statusColor;
 
     switch (booking.bookingStatus.toLowerCase()) {
@@ -97,6 +112,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
         statusColor = Colors.grey;
     }
 
+    final imgUrl = _buildImageUrl(booking.imageUrl);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(12),
@@ -114,22 +131,19 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
             width: 90,
             height: 70,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius:
+                  BorderRadius.circular(10),
               color: Colors.grey.shade200,
-              image: booking.imageUrl != null &&
-                      booking.imageUrl!.isNotEmpty
+              image: imgUrl.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(
-                        Uri.parse(ApiConfig.baseUrl)
-                            .resolve(booking.imageUrl!)
-                            .toString(),
-                      ),
+                      image: NetworkImage(imgUrl),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: booking.imageUrl == null
-                ? const Icon(Icons.directions_car, color: Colors.grey)
+            child: imgUrl.isEmpty
+                ? const Icon(Icons.directions_car,
+                    color: Colors.grey)
                 : null,
           ),
 
@@ -138,29 +152,36 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
           // ================= Info =================
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
               children: [
                 Text(
                   "${booking.brand} ${booking.model}",
                   style: const TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight:
+                        FontWeight.bold,
                   ),
                 ),
                 Text(
                   booking.category,
-                  style: const TextStyle(color: Colors.grey),
+                  style: const TextStyle(
+                      color: Colors.grey),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   "${booking.totalPrice.toStringAsFixed(0)} NIS",
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontWeight:
+                          FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   "${booking.startDate.toLocal().toString().split(' ').first} → "
                   "${booking.endDate.toLocal().toString().split(' ').first}",
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey),
                 ),
               ],
             ),
@@ -168,16 +189,23 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
 
           // ================= Status =================
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding:
+                const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(20),
+              color:
+                  statusColor.withOpacity(0.15),
+              borderRadius:
+                  BorderRadius.circular(20),
             ),
             child: Text(
-              booking.bookingStatus.toUpperCase(),
+              booking.bookingStatus
+                  .toUpperCase(),
               style: TextStyle(
                 color: statusColor,
-                fontWeight: FontWeight.bold,
+                fontWeight:
+                    FontWeight.bold,
                 fontSize: 12,
               ),
             ),

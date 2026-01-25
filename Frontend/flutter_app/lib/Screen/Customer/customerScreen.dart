@@ -6,6 +6,7 @@ import '../../model/car_model.dart';
 import '../../model/car_price_model.dart';
 import 'CarDetailsCustomer.dart';
 import 'BookingHistoryScreen.dart';
+import 'NotificationScreenCustomer.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -19,15 +20,27 @@ class _CustomerScreenState extends State<CustomerScreen> {
   bool _loading = true;
   List<Car> _cars = [];
 
+  String get _apiBaseUrl => ApiConfig.baseUrl;
+
+  String _buildImageUrl(String img) {
+    var v = img.trim();
+    if (v.isEmpty) return "";
+
+    if (v.startsWith("http")) return v;
+
+    if (v.startsWith("/uploads")) {
+      return "$_apiBaseUrl$v";
+    }
+
+    return "$_apiBaseUrl/uploads/cars/$v";
+  }
+
   @override
   void initState() {
     super.initState();
     _loadCars();
   }
 
-  // ================================
-  // Load cars from API
-  // ================================
   Future<void> _loadCars() async {
     try {
       final data = await CarsApi.getCars();
@@ -42,9 +55,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     }
   }
 
-  // ================================
-  // Get today price from DB
-  // ================================
   double _getTodayPriceFromDb(Car car) {
     final today = DateTime.now().weekday;
 
@@ -68,9 +78,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     return todayPrice.price;
   }
 
-  // ================================
-  // Build body
-  // ================================
   Widget _buildBody() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -89,11 +96,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // ================================
-  // Car Card
-  // ================================
   Widget _carCard(Car car) {
     final price = _getTodayPriceFromDb(car);
+    final imgUrl = _buildImageUrl(car.imageUrl);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -107,23 +112,20 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
       child: Row(
         children: [
-          // ================= Image =================
           Container(
             width: 110,
             height: 80,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: Colors.grey.shade200,
-              image: car.imageUrl.isNotEmpty
+              image: imgUrl.isNotEmpty
                   ? DecorationImage(
-                      image: NetworkImage(
-                        Uri.parse(ApiConfig.baseUrl).resolve(car.imageUrl).toString(),
-                      ),
+                      image: NetworkImage(imgUrl),
                       fit: BoxFit.cover,
                     )
                   : null,
             ),
-            child: car.imageUrl.isEmpty
+            child: imgUrl.isEmpty
                 ? const Icon(Icons.directions_car,
                     size: 40, color: Colors.grey)
                 : null,
@@ -131,7 +133,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
           const SizedBox(width: 12),
 
-          // ================= Info =================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,8 +144,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(car.category,
-                    style: const TextStyle(color: Colors.grey)),
+                Text(
+                  car.category,
+                  style: const TextStyle(color: Colors.grey),
+                ),
                 const SizedBox(height: 6),
                 Text(
                   "${price.toStringAsFixed(0)} NIS / day",
@@ -165,7 +168,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     Text(
                       car.status ? "Available" : "Not Available",
                       style: TextStyle(
-                        color: car.status ? Colors.green : Colors.red,
+                        color:
+                            car.status ? Colors.green : Colors.red,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -175,7 +179,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ),
           ),
 
-          // ================= Button =================
           ElevatedButton(
             onPressed: car.status
                 ? () {
@@ -212,15 +215,11 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // ================================
-  // Main build
-  // ================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
 
-      // ================= AppBar =================
       appBar: AppBar(
         leading: Image.asset("assets/carRental.png", height: 100),
         title: const Text(
@@ -228,6 +227,18 @@ class _CustomerScreenState extends State<CustomerScreen> {
           style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications),
+            color: Colors.black,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationScreenCustomer(),
+                ),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 15),
             child: CircleAvatar(
@@ -253,23 +264,19 @@ class _CustomerScreenState extends State<CustomerScreen> {
         backgroundColor: Colors.white,
       ),
 
-      // ================= Body =================
       body: _buildBody(),
 
-      // ================= Bottom Navigation =================
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          setState(() => _currentIndex = index);
 
           if (index == 1) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const BookingHistoryScreen(),
+                builder: (_) => const BookingHistoryScreen(),
               ),
             );
           }
@@ -278,24 +285,31 @@ class _CustomerScreenState extends State<CustomerScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ProfileScreen(),
+                builder: (_) => const NotificationScreenCustomer(),
+              ),
+            );
+          }
+
+          if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ProfileScreen(),
               ),
             );
           }
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
+              icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'My Bookings',
-          ),
+              icon: Icon(Icons.calendar_today),
+              label: 'My Bookings'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+              icon: Icon(Icons.notifications),
+              label: 'Notifications'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

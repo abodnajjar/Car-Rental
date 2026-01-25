@@ -124,7 +124,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       'Sep',
       'Oct',
       'Nov',
-      'Dec'
+      'Dec',
     ];
     return '${months[dt.month - 1]} ${dt.day.toString().padLeft(2, '0')}, ${dt.year}';
   }
@@ -133,7 +133,8 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EmployeeBookingDetailsScreen(bookingId: bookingId),
+        builder: (context) =>
+            EmployeeBookingDetailsScreen(bookingId: bookingId),
       ),
     );
 
@@ -174,9 +175,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     if (index == 4) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => const ProfileScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const ProfileScreen()),
       );
       return;
     }
@@ -225,10 +224,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         toolbarHeight: 100,
         backgroundColor: Colors.white,
       ),
-      body: Container(
-        color: Colors.grey[200],
-        child: _buildBody(),
-      ),
+      body: Container(color: Colors.grey[200], child: _buildBody()),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
@@ -242,18 +238,12 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
             icon: Icon(Icons.check_circle),
             label: 'Accepted',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.cancel),
-            label: 'Rejected',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.cancel), label: 'Rejected'),
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_car),
             label: 'Cars',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -290,9 +280,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       children: [
         _employeeHeader(),
         _statusHeader(),
-        Expanded(
-          child: _buildBookingsList(),
-        ),
+        Expanded(child: _buildBookingsList()),
       ],
     );
   }
@@ -356,13 +344,13 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
             _currentStatus == 'pending'
                 ? Icons.pending_actions
                 : _currentStatus == 'accepted'
-                    ? Icons.check_circle
-                    : Icons.cancel,
+                ? Icons.check_circle
+                : Icons.cancel,
             color: _currentStatus == 'pending'
                 ? Colors.orange
                 : _currentStatus == 'accepted'
-                    ? Colors.green
-                    : Colors.red,
+                ? Colors.green
+                : Colors.red,
           ),
           const SizedBox(width: 8),
           Text(
@@ -388,11 +376,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
           padding: const EdgeInsets.all(24),
           children: [
             const SizedBox(height: 60),
-            Icon(
-              Icons.inbox_outlined,
-              color: Colors.grey.shade400,
-              size: 72,
-            ),
+            Icon(Icons.inbox_outlined, color: Colors.grey.shade400, size: 72),
             const SizedBox(height: 16),
             Center(
               child: Text(
@@ -440,49 +424,48 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
             child: _carsLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _carsError != null
-                    ? ListView(
-                        padding: const EdgeInsets.all(24),
-                        children: [
-                          const SizedBox(height: 40),
-                          const Icon(Icons.error_outline,
-                              color: Colors.red, size: 64),
-                          const SizedBox(height: 12),
-                          Center(
-                            child: Text(
-                              _carsError!,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: _loadCars,
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      )
-                    : _filteredCars.isEmpty
-                        ? ListView(
-                            padding: const EdgeInsets.all(24),
-                            children: const [
-                              SizedBox(height: 40),
-                              Icon(Icons.directions_car,
-                                  color: Colors.grey, size: 64),
-                              SizedBox(height: 12),
-                              Center(
-                                child: Text(
-                                  'No cars found for this search.',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: _filteredCars.length,
-                            itemBuilder: (context, index) {
-                              return _buildCarCard(_filteredCars[index]);
-                            },
-                          ),
+                ? ListView(
+                    padding: const EdgeInsets.all(24),
+                    children: [
+                      const SizedBox(height: 40),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 64,
+                      ),
+                      const SizedBox(height: 12),
+                      Center(
+                        child: Text(_carsError!, textAlign: TextAlign.center),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: _loadCars,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  )
+                : _filteredCars.isEmpty
+                ? ListView(
+                    padding: const EdgeInsets.all(24),
+                    children: const [
+                      SizedBox(height: 40),
+                      Icon(Icons.directions_car, color: Colors.grey, size: 64),
+                      SizedBox(height: 12),
+                      Center(
+                        child: Text(
+                          'No cars found for this search.',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _filteredCars.length,
+                    itemBuilder: (context, index) {
+                      return _buildCarCard(_filteredCars[index]);
+                    },
+                  ),
           ),
         ),
       ],
@@ -583,8 +566,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stack) => Container(
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.directions_car,
-                              color: Colors.grey),
+                          child: const Icon(
+                            Icons.directions_car,
+                            color: Colors.grey,
+                          ),
                         ),
                       )
                     : Container(
@@ -615,8 +600,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                         ),
                       ),
                       Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: isAvailable
                               ? Colors.green.withOpacity(0.12)
@@ -643,9 +630,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                   if (price != null)
                     Text(
                       '${price.toStringAsFixed(0)} NIS / day',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   if (price == null)
                     const Text(
@@ -671,13 +656,16 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   String _buildImageUrl(String img) {
-    if (img.trim().isEmpty) return '';
-    if (img.startsWith('http://') || img.startsWith('https://')) return img;
-    final base = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl.substring(0, ApiConfig.baseUrl.length - 1)
-        : ApiConfig.baseUrl;
-    final path = img.startsWith('/') ? img : '/$img';
-    return '$base$path';
+    var v = img.trim();
+    if (v.isEmpty) return "";
+
+    if (v.startsWith("http")) return v;
+
+    if (v.startsWith("/uploads")) {
+      return "${ApiConfig.baseUrl}$v";
+    }
+
+    return "${ApiConfig.baseUrl}/uploads/cars/$v";
   }
 
   Widget _buildBookingCard(PendingBooking booking) {
@@ -715,7 +703,9 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
                           decoration: BoxDecoration(
                             color: statusColor.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(10),
@@ -731,22 +721,35 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
                       ],
                     ),
                     const Divider(height: 18),
-                    _infoRow(Icons.calendar_today, 'Start',
-                        _formatDate(booking.startDate)),
-                    _infoRow(Icons.event_available, 'End',
-                        _formatDate(booking.endDate)),
+                    _infoRow(
+                      Icons.calendar_today,
+                      'Start',
+                      _formatDate(booking.startDate),
+                    ),
+                    _infoRow(
+                      Icons.event_available,
+                      'End',
+                      _formatDate(booking.endDate),
+                    ),
                     _infoRow(Icons.access_time, 'Duration', '$days days'),
-                    _infoRow(Icons.attach_money, 'Total',
-                        '\$${booking.totalPrice.toStringAsFixed(2)}'),
+                    _infoRow(
+                      Icons.attach_money,
+                      'Total',
+                      '\$${booking.totalPrice.toStringAsFixed(2)}',
+                    ),
                     if (booking.pickupLocation != null)
-                      _infoRow(Icons.location_on, 'Pickup',
-                          booking.pickupLocation!),
+                      _infoRow(
+                        Icons.location_on,
+                        'Pickup',
+                        booking.pickupLocation!,
+                      ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton.icon(
-                          onPressed: () => _navigateToDetails(booking.bookingId),
+                          onPressed: () =>
+                              _navigateToDetails(booking.bookingId),
                           icon: const Icon(Icons.arrow_forward),
                           label: const Text('View Details'),
                         ),
@@ -765,37 +768,22 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   Widget _carThumbnail(String? imageUrl) {
     final borderRadius = BorderRadius.circular(12);
 
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return Container(
-        width: 110,
-        height: 90,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: borderRadius,
-        ),
-        child: const Icon(Icons.directions_car, color: Colors.white, size: 40),
-      );
+    String buildImageUrl(String img) {
+      var v = img.trim();
+      if (v.isEmpty) return "";
+
+      if (v.startsWith("http")) return v;
+
+      if (v.startsWith("/uploads")) {
+        return "${ApiConfig.baseUrl}$v";
+      }
+
+      return "${ApiConfig.baseUrl}/uploads/cars/$v";
     }
 
-    final imageWidget = imageUrl.startsWith('http')
-        ? Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stack) => const Icon(
-              Icons.directions_car,
-              size: 40,
-              color: Colors.white,
-            ),
-          )
-        : Image.asset(
-            'assets/car_images/$imageUrl',
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stack) => const Icon(
-              Icons.directions_car,
-              size: 40,
-              color: Colors.white,
-            ),
-          );
+    final imgUrl = (imageUrl == null || imageUrl.isEmpty)
+        ? ""
+        : buildImageUrl(imageUrl);
 
     return ClipRRect(
       borderRadius: borderRadius,
@@ -803,7 +791,27 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         width: 110,
         height: 90,
         color: Colors.grey.shade300,
-        child: imageWidget,
+        child: imgUrl.isNotEmpty
+            ? Image.network(
+                imgUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Center(
+                    child: Icon(
+                      Icons.directions_car,
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                  );
+                },
+              )
+            : const Center(
+                child: Icon(
+                  Icons.directions_car,
+                  size: 40,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }

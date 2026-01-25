@@ -1,33 +1,26 @@
-class AdminBooking {
-  final int bookingId;
+class Booking {
+  final int id;
   final int userId;
+  final int? employeeId;
   final int carId;
 
-  final String carBrand;
-  final String carModel;
-  final String customerName;
-
-  final String? imageUrl;
   final String? pickupLocation;
   final String? dropoffLocation;
 
-  final DateTime startDate;
-  final DateTime endDate;
+  final DateTime? startDate;
+  final DateTime? endDate;
 
-  final double totalPrice;
+  final double? totalPrice;
   final String status;
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
-  AdminBooking({
-    required this.bookingId,
+  Booking({
+    required this.id,
     required this.userId,
+    required this.employeeId,
     required this.carId,
-    required this.carBrand,
-    required this.carModel,
-    required this.customerName,
-    this.imageUrl,
-    this.pickupLocation,
-    this.dropoffLocation,
+    required this.pickupLocation,
+    required this.dropoffLocation,
     required this.startDate,
     required this.endDate,
     required this.totalPrice,
@@ -35,31 +28,29 @@ class AdminBooking {
     required this.createdAt,
   });
 
-  factory AdminBooking.fromJson(Map<String, dynamic> json) {
-    return AdminBooking(
-      bookingId: json['booking_id'],
+  factory Booking.fromJson(Map<String, dynamic> json) {
+    DateTime? parseDate(dynamic v) {
+      if (v == null) return null;
+      return DateTime.tryParse(v.toString());
+    }
+
+    double? parseDouble(dynamic v) {
+      if (v == null) return null;
+      return double.tryParse(v.toString());
+    }
+
+    return Booking(
+      id: json['id'],
       userId: json['user_id'],
+      employeeId: json['employee_id'],
       carId: json['car_id'],
-      carBrand: json['car_brand'],
-      carModel: json['car_model'],
-      customerName: json['customer_name'],
-      imageUrl: json['image_url'],
       pickupLocation: json['pickup_location'],
       dropoffLocation: json['dropoff_location'],
-      startDate: DateTime.parse(json['start_date']),
-      endDate: DateTime.parse(json['end_date']),
-      totalPrice: (json['total_price'] as num).toDouble(),
-      status: json['status'],
-      createdAt: DateTime.parse(json['created_at']),
+      startDate: parseDate(json['start_date']),
+      endDate: parseDate(json['end_date']),
+      totalPrice: parseDouble(json['total_price']),
+      status: (json['status'] ?? 'pending').toString(),
+      createdAt: parseDate(json['created_at']),
     );
   }
-
-  // 🔥 Helper properties للتقسيم حسب التاريخ
-  bool get isUpcoming => startDate.isAfter(DateTime.now());
-
-  bool get isActive =>
-      startDate.isBefore(DateTime.now()) &&
-      endDate.isAfter(DateTime.now());
-
-  bool get isCompleted => endDate.isBefore(DateTime.now());
 }

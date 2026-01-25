@@ -53,7 +53,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
 
-      // ==================== AppBar ===========================================
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 232, 241, 242),
         elevation: 0,
@@ -101,18 +100,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   builder: (context) => const EditprofileScreen(),
                 ),
               );
-              // TODO: Navigate to Edit Profile
             },
           ),
         ],
       ),
 
-      // ==================== Body =============================================
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ===== Card معلومات المستخدم =====
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -212,7 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 15),
 
-            // ===== Card Actions =====
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

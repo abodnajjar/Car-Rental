@@ -8,8 +8,23 @@ class CarDetailsCustomer extends StatelessWidget {
 
   const CarDetailsCustomer({super.key, required this.car});
 
+  String _buildImageUrl(String img) {
+    var v = img.trim();
+    if (v.isEmpty) return "";
+
+    if (v.startsWith("http")) return v;
+
+    if (v.startsWith("/uploads")) {
+      return "${ApiConfig.baseUrl}$v";
+    }
+
+    return "${ApiConfig.baseUrl}/uploads/cars/$v";
+  }
+
   @override
   Widget build(BuildContext context) {
+    final imgUrl = _buildImageUrl(car.imageUrl);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("${car.brand} ${car.model}"),
@@ -23,19 +38,30 @@ class CarDetailsCustomer extends StatelessWidget {
             // ================= Image =================
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: car.imageUrl.isNotEmpty
+              child: imgUrl.isNotEmpty
                   ? Image.network(
-                    Uri.parse(ApiConfig.baseUrl)
-                      .resolve(car.imageUrl)
-                      .toString(),
+                      imgUrl,
                       height: 220,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 220,
+                          color: Colors.grey.shade300,
+                          child: const Icon(
+                            Icons.broken_image,
+                            size: 80,
+                          ),
+                        );
+                      },
                     )
                   : Container(
                       height: 220,
                       color: Colors.grey.shade300,
-                      child: const Icon(Icons.directions_car, size: 80),
+                      child: const Icon(
+                        Icons.directions_car,
+                        size: 80,
+                      ),
                     ),
             ),
 
@@ -52,7 +78,10 @@ class CarDetailsCustomer extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               "${car.category} • ${car.year}",
-              style: const TextStyle(fontSize: 18, color: Colors.grey),
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
             ),
 
             const SizedBox(height: 20),
@@ -71,7 +100,8 @@ class CarDetailsCustomer extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: car.status ? Colors.green : Colors.red,
+                    color:
+                        car.status ? Colors.green : Colors.red,
                   ),
                 ),
               ],
@@ -82,19 +112,23 @@ class CarDetailsCustomer extends StatelessWidget {
             // ================= Prices =================
             const Text(
               "Prices per Day",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
 
             ...car.prices.map(
               (p) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       p.day.toUpperCase(),
-                      style: const TextStyle(fontSize: 16),
+                      style:
+                          const TextStyle(fontSize: 16),
                     ),
                     Text(
                       "${p.price.toStringAsFixed(0)} NIS",
@@ -111,30 +145,35 @@ class CarDetailsCustomer extends StatelessWidget {
             const SizedBox(height: 30),
 
             // ================= Book Button =================
-           SizedBox(
-  width: double.infinity,
-  height: 50,
-  child: ElevatedButton(
-    onPressed: car.status
-        ? () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => BookingScreen(car: car),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: car.status
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                BookingScreen(car: car),
+                          ),
+                        );
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: car.status
+                      ? Colors.blue
+                      : Colors.grey.shade400,
+                ),
+                child: const Text(
+                  "Book Now",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            );
-          }
-        : null,
-    style: ElevatedButton.styleFrom(
-      backgroundColor: car.status ? Colors.blue : Colors.grey.shade400,
-    ),
-    child: const Text(
-      "Book Now",
-      style: TextStyle(fontSize: 18, color: Colors.white),
-    ),
-  ),
-),
-
+            ),
           ],
         ),
       ),
