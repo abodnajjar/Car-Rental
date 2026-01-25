@@ -160,6 +160,7 @@ class MockBookingData {
     if (detail != null) {
       _detailsById[bookingId] = BookingDetails(
         bookingId: detail.bookingId,
+        carId: detail.carId,
         customer: detail.customer,
         car: detail.car,
         pickupLocation: detail.pickupLocation,
