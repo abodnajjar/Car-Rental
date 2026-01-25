@@ -76,50 +76,18 @@ class BookingsApi {
     }
   }
 
-
-
- static Future<Map<String, dynamic>> calculatePrice({
-  required int userId,
-  required int carId,
-  required String pickupLocation,
-  required String dropoffLocation,
-  required DateTime startDate,
-  required DateTime endDate,
-}) async {
-  try {
-    print("=== CALCULATE PRICE REQUEST ===");
-    print("user_id: $userId");
-    print("car_id: $carId");
-    print("pickup: $pickupLocation");
-    print("dropoff: $dropoffLocation");
-    print("start_date: ${startDate.toIso8601String().split('T').first}");
-    print("end_date: ${endDate.toIso8601String().split('T').first}");
-
-    final res = await _dio.post(
-      '/bookings/price',
-      data: {
-        "user_id": userId,
-        "car_id": carId,
-        "pickup_location": pickupLocation,
-        "dropoff_location": dropoffLocation,
-        "start_date": startDate.toIso8601String().split('T').first,
-        "end_date": endDate.toIso8601String().split('T').first,
-      },
-    );
-
-    print("=== RESPONSE ===");
-    print(res.data);
-
-    return Map<String, dynamic>.from(res.data);
-  } on DioException catch (e) {
-    print("=== DIO ERROR ===");
-    print("message: ${e.message}");
-    print("type: ${e.type}");
-    print("response: ${e.response}");
-    print("status: ${e.response?.statusCode}");
-    print("data: ${e.response?.data}");
-
-    throw Exception("Calculate Price failed — check console logs");
+  /// PUT /admin/cars/{car_id}/availability
+  static Future<void> updateCarAvailability(int carId, bool isAvailable) async {
+    try {
+      await _dio.put(
+        '/admin/cars/$carId/availability',
+        data: {'status': isAvailable},
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data?['detail'] ?? 'Failed to update car availability',
+      );
+    }
   }
 }
 
