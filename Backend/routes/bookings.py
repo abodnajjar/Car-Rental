@@ -1,12 +1,13 @@
 from fastapi import APIRouter, HTTPException
+from typing import List
 from db_conection import get_connection
-from datetime import datetime, time
 from datetime import datetime, timedelta, date, time
 from schemas.customer_booking import CustomerBookingsResponse
-from schemas.booking import BookingDraftIn, BookingQuoteOut, BookingConfirmIn
+from schemas.booking import BookingDraftIn, BookingOut, BookingQuoteOut, BookingConfirmIn
 from schemas.employee_pending import PendingBookingOut
 from schemas.employee_booking_details import EmployeeBookingDetailsOut
 from schemas.update_booking_status import BookingStatusUpdateIn
+
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -78,36 +79,37 @@ def calculate_price(cur, car_id: int, start_date: date, end_date: date):
     return len(days), total, breakdown
 
 
-def _status_notification(status: str, booking_id: int) -> tuple[str, str]:
+def _status_notification(status: str, booking_id: int, car_brand: str = "", car_model: str = "", price: float = 0.0) -> tuple[str, str]:
     status = status.lower().strip()
+    car_info = f"{car_brand} {car_model}" if car_brand else "Your car"
+    
     if status in ("approved", "accepted"):
         return (
             "Booking approved",
-            f"Your booking #{booking_id} has been approved.",
+            f"Your booking #{booking_id} for {car_info} has been approved! Total: ${price:.2f}",
         )
     if status in ("cancelled", "rejected"):
         return (
             "Booking rejected",
-            f"Your booking #{booking_id} has been rejected.",
+            f"Your booking #{booking_id} for {car_info} has been rejected.",
         )
     if status == "active":
         return (
             "Car pickup confirmed",
-            f"Your booking #{booking_id} is now active. Enjoy your ride!",
+            f"Your booking #{booking_id} for {car_info} is now active. Enjoy your ride!",
         )
     if status == "completed":
         return (
             "Rental completed",
-            f"Your booking #{booking_id} has been completed. Thank you for choosing CarRental.",
+            f"Your booking #{booking_id} for {car_info} has been completed. Thank you for choosing CarRental.",
         )
     if status == "pending":
         return (
             "Booking pending",
-            f"Your booking #{booking_id} is pending review.",
+            f"Your booking #{booking_id} for {car_info} is pending review.",
         )
     return ("Booking update", f"Your booking #{booking_id} status is now '{status}'.")
 
-# first request to know the price of booking
 @router.post("/price", response_model=BookingQuoteOut)
 def price_booking(payload: BookingDraftIn):
     validate_booking_date(payload.start_date)
@@ -132,7 +134,6 @@ def price_booking(payload: BookingDraftIn):
     finally:
         conn.close()
 
-# to add the booking after checking all things
 @router.post("/confirm")
 def confirm_booking(payload: BookingConfirmIn):
     validate_booking_date(payload.start_date)
@@ -216,7 +217,6 @@ def confirm_booking(payload: BookingConfirmIn):
     finally:
         conn.close()
 
-# get for the customer all booking with know the id
 @router.get("/customer/{customer_id}", response_model=CustomerBookingsResponse)
 def get_customer_bookings(customer_id: int):
     conn = get_connection()
@@ -272,7 +272,6 @@ def get_customer_bookings(customer_id: int):
     finally:
         conn.close()
 
-# get for the employe all care that status is pending 
 @router.get("/pending", response_model=list[PendingBookingOut])
 def get_pending_bookings():
     conn = get_connection()
@@ -361,7 +360,6 @@ def get_bookings_by_status(status: str):
     finally:
         conn.close()
 
-# show booking details to rject or accept the thing
 @router.get("/details/{booking_id}", response_model=EmployeeBookingDetailsOut)
 def get_booking_details_for_employee(booking_id: int):
     conn = get_connection()
@@ -370,7 +368,7 @@ def get_booking_details_for_employee(booking_id: int):
 
         cur.execute("""
             SELECT
-                r.id,
+                r.id, r.car_id,
                 r.pickup_location, r.dropoff_location,
                 r.start_date, r.end_date,
                 r.total_price, r.status,
@@ -391,34 +389,34 @@ def get_booking_details_for_employee(booking_id: int):
 
         return {
             "booking_id": row[0],
-            "pickup_location": row[1],
-            "dropoff_location": row[2],
-            "start_date": row[3],
-            "end_date": row[4],
-            "total_price": float(row[5]) if row[5] else 0.0,
-            "booking_status": row[6],
+            "car_id": row[1],
+            "pickup_location": row[2],
+            "dropoff_location": row[3],
+            "start_date": row[4],
+            "end_date": row[5],
+            "total_price": float(row[6]) if row[6] else 0.0,
+            "booking_status": row[7],
 
             "customer": {
-                "full_name": row[7],
-                "email": row[8],
-                "phone": row[9],
-                "driving_license_no": row[10],
+                "full_name": row[8],
+                "email": row[9],
+                "phone": row[10],
+                "driving_license_no": row[11],
             },
 
             "car": {
-                "brand": row[11],
-                "model": row[12],
-                "category": row[13],
-                "year": row[14],
-                "car_status": bool(row[15]),
-                "image_url": row[16],
+                "brand": row[12],
+                "model": row[13],
+                "category": row[14],
+                "year": row[15],
+                "car_status": bool(row[16]),
+                "image_url": row[17],
             }
         }
 
     finally:
         conn.close()
 
-# get the active for admin if neeed 
 @router.get("/active")
 def get_active_bookings():
     conn = get_connection()
@@ -463,6 +461,7 @@ def get_active_bookings():
 @router.put("/{booking_id}/status")
 def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
     new_status = payload.status.lower().strip()
+    employee_id = payload.employee_id
 
     allowed_statuses = ["pending", "approved", "active", "completed", "cancelled"]
     if new_status not in allowed_statuses:
@@ -476,20 +475,32 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
         cur = conn.cursor()
 
         cur.execute(
-            "SELECT id, user_id FROM rentals WHERE id=%s LIMIT 1",
+            """
+            SELECT r.id, r.user_id, c.brand, c.model, r.total_price 
+            FROM rentals r
+            JOIN cars c ON c.id = r.car_id
+            WHERE r.id=%s LIMIT 1
+            """,
             (booking_id,)
         )
         row = cur.fetchone()
         if not row:
             raise HTTPException(404, "Booking not found")
-        user_id = row[1]
+        
+        booking_id_check, user_id, car_brand, car_model, total_price = row
 
-        cur.execute(
-            "UPDATE rentals SET status=%s WHERE id=%s",
-            (new_status, booking_id)
-        )
+        if employee_id is not None:
+            cur.execute(
+                "UPDATE rentals SET status=%s, employee_id=%s WHERE id=%s",
+                (new_status, employee_id, booking_id)
+            )
+        else:
+            cur.execute(
+                "UPDATE rentals SET status=%s WHERE id=%s",
+                (new_status, booking_id)
+            )
 
-        title, message = _status_notification(new_status, booking_id)
+        title, message = _status_notification(new_status, booking_id, car_brand, car_model, total_price)
         cur.execute(
             """
             SELECT id FROM notifications
@@ -512,12 +523,45 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
         return {
             "message": "Booking status updated",
             "booking_id": booking_id,
-            
             "new_status": new_status
         }
 
     finally:
         conn.close()
 
+@router.get("", response_model=List[BookingOut])
+def get_all_bookings():
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
 
-        
+        cur.execute("""
+            SELECT id, user_id, employee_id, car_id,
+                   pickup_location, dropoff_location,
+                   start_date, end_date,
+                   total_price, status, created_at
+            FROM rentals
+            ORDER BY start_date DESC
+        """)
+
+        rows = cur.fetchall()
+
+        return [
+            {
+                "booking_id": r[0],
+                "user_id": r[1],
+                "employee_id": r[2],
+                "car_id": r[3],
+                "pickup_location": r[4],
+                "dropoff_location": r[5],
+                "start_date": r[6],
+                "end_date": r[7],
+                "total_price": float(r[8]),
+                "status": r[9],
+                "created_at": r[10],
+            }
+            for r in rows
+        ]
+
+    finally:
+        conn.close()

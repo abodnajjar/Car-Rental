@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../profileScreen.dart';
 import '../../api/cars_api.dart';
+import '../../config/api_config.dart';
 import '../../model/car_model.dart';
 import '../../model/car_price_model.dart';
 import 'CarDetailsCustomer.dart';
@@ -39,9 +40,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     }
   }
 
-  // ================================
-  // Get today price from DB
-  // ================================
   double _getTodayPriceFromDb(Car car) {
     final today = DateTime.now().weekday;
 
@@ -65,9 +63,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     return todayPrice.price;
   }
 
-  // ================================
-  // Build body
-  // ================================
   Widget _buildBody() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -86,9 +81,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // ================================
-  // Car Card
-  // ================================
   Widget _carCard(Car car) {
     final price = _getTodayPriceFromDb(car);
 
@@ -102,7 +94,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
       child: Row(
         children: [
-          // ================= Image =================
           Container(
             width: 110,
             height: 80,
@@ -112,7 +103,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
               image: car.imageUrl.isNotEmpty
                   ? DecorationImage(
                       image: NetworkImage(
-                        "http://127.0.0.1:8000/${car.imageUrl}",
+                        Uri.parse(ApiConfig.baseUrl).resolve(car.imageUrl).toString(),
                       ),
                       fit: BoxFit.cover,
                     )
@@ -125,7 +116,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
           const SizedBox(width: 12),
 
-          // ================= Info =================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,7 +158,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ),
           ),
 
-          // ================= Button =================
           ElevatedButton(
             onPressed: car.status
                 ? () {
@@ -200,15 +189,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // ================================
-  // Main build
-  // ================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-
-      // ================= AppBar =================
       appBar: AppBar(
         leading: Image.asset("assets/carRental.png", height: 100),
         title: const Text(
@@ -240,11 +224,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
         toolbarHeight: 100,
         backgroundColor: Colors.white,
       ),
-
-      // ================= Body =================
       body: _buildBody(),
-
-      // ================= Bottom Navigation =================
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,

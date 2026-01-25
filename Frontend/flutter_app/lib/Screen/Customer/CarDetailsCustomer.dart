@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/api_config.dart';
 import '../../model/car_model.dart';
 import 'BookingScreen.dart';
 
@@ -19,12 +20,13 @@ class CarDetailsCustomer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= Image =================
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: car.imageUrl.isNotEmpty
                   ? Image.network(
-                      "http://127.0.0.1:8000/${car.imageUrl}",
+                    Uri.parse(ApiConfig.baseUrl)
+                      .resolve(car.imageUrl)
+                      .toString(),
                       height: 220,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -37,8 +39,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
-            // ================= Info =================
             Text(
               "${car.brand} ${car.model}",
               style: const TextStyle(
@@ -53,8 +53,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
-            // ================= Availability =================
             Row(
               children: [
                 Icon(
@@ -75,8 +73,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 25),
-
-            // ================= Prices =================
             const Text(
               "Prices per Day",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -106,8 +102,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 30),
-
-            // ================= Book Button =================
            SizedBox(
   width: double.infinity,
   height: 50,

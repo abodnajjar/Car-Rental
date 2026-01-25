@@ -16,14 +16,12 @@ class BookedCarsScreen extends StatelessWidget {
             carName: "Toyota Camry",
             customerName: "Ahmed Ali",
             days: 3,
-            status: "Active", // Active | Pending | Finished
+            status: "Active",
           );
         },
       ),
     );
   }
-
-  // ================= Booked Car Card =================
   Widget _bookedCarCard({
     required String carName,
     required String customerName,
@@ -58,7 +56,6 @@ class BookedCarsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // صورة السيارة
           Container(
             width: 70,
             height: 70,
@@ -74,8 +71,6 @@ class BookedCarsScreen extends StatelessWidget {
           ),
 
           const SizedBox(width: 16),
-
-          // معلومات الحجز
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -104,7 +99,6 @@ class BookedCarsScreen extends StatelessWidget {
             ),
           ),
 
-          
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 
 class AuthApi {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://localhost:8000',
+
+      baseUrl: 'http://127.0.0.1:8000',
+
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},

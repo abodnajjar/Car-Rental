@@ -26,11 +26,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
   double _totalPrice = 0;
 
-  int? _userId; // ✅ من SharedPreferences
-
-  // ==============================
-  // Load user id
-  // ==============================
+  int? _userId;
   @override
   void initState() {
     super.initState();
@@ -44,9 +40,6 @@ class _BookingScreenState extends State<BookingScreen> {
     });
   }
 
-  // ==============================
-  // Pick date helper
-  // ==============================
   Future<void> _pickDate(bool isStart) async {
     final picked = await showDatePicker(
       context: context,
@@ -66,9 +59,6 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  // ==============================
-  // Calculate Price (API)
-  // ==============================
   Future<void> _calculatePrice() async {
     if (_userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,15 +109,12 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
-  // ==============================
-  // Confirm Booking (API)
-  // ==============================
   Future<void> _confirmBooking() async {
     if (_userId == null) return;
 
     try {
       await BookingsApi.confirmBooking(
-        userId: _userId!, // ✅ من SharedPreferences
+        userId: _userId!,
         carId: widget.car.carId,
         pickupLocation: _pickupController.text,
         dropoffLocation: _dropoffController.text,
@@ -151,10 +138,6 @@ class _BookingScreenState extends State<BookingScreen> {
       );
     }
   }
-
-  // ==============================
-  // UI
-  // ==============================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -169,7 +152,6 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= Car Info =================
             Text(
               "${widget.car.brand} ${widget.car.model}",
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -185,7 +167,6 @@ class _BookingScreenState extends State<BookingScreen> {
             _inputField("Dropoff Location", _dropoffController),
             const SizedBox(height: 20),
 
-            // ================= Dates =================
             Row(
               children: [
                 Expanded(
@@ -208,7 +189,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
             const SizedBox(height: 24),
 
-            // ================= Calculate Price =================
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -222,7 +202,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
             const SizedBox(height: 20),
 
-            // ================= Price Result =================
             if (_priceCalculated) ...[
               Text(
                 "Total Price: $_totalPrice NIS",
@@ -269,9 +248,6 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  // ==============================
-  // Helpers
-  // ==============================
   Widget _inputField(String label, TextEditingController controller) {
     return TextField(
       controller: controller,

@@ -36,7 +36,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   bool _loading = false;
 
-  
   Future<void> _payNow() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -50,7 +49,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         dropoffLocation: widget.dropoffLocation,
         startDate: widget.startDate,
         endDate: widget.endDate,
-        paymentMethod: "visa", 
+        paymentMethod: "visa",
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -73,7 +72,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
   }
 
- 
   @override
   Widget build(BuildContext context) {
     return Scaffold(

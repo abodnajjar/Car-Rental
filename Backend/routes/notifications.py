@@ -229,7 +229,6 @@ def create_and_get_reminder_notifications(
 
             title = "Rental ending soon"
 
-            # DEDUPE by rental_id (much safer than by message text)
             cur.execute(
                 """
                 SELECT id, user_id, title, message, rental_id, is_read, created_at

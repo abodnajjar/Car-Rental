@@ -1,3 +1,4 @@
+from unittest import result
 from fastapi import APIRouter, HTTPException
 from db_conection import get_connection
 from schemas.car import CarOut, CarCreate,CarUpdate
@@ -6,7 +7,6 @@ import os, shutil
 UPLOAD_DIR = "uploads/cars"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 router = APIRouter(tags=["Cars"])
-# return the number of cars we have
 @router.get("/cars/count")
 def cars_count():
     conn = get_connection()
@@ -17,7 +17,27 @@ def cars_count():
     finally:
         conn.close()
 
-# return all cars 
+
+@router.put("/cars/{car_id}/availability")
+def update_car_availability(car_id: int, payload: dict):
+    if "status" not in payload:
+        raise HTTPException(status_code=400, detail="status is required")
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE cars SET status=%s WHERE id=%s",
+            (payload["status"], car_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Car not found")
+
+        conn.commit()
+        return {"message": "Car availability updated", "car_id": car_id}
+    finally:
+        conn.close()
+
 @router.get("/cars", response_model=list[CarOut])
 def get_all_cars():
     conn = get_connection()
@@ -50,14 +70,14 @@ def get_all_cars():
                     "day": p[1],
                     "price": float(p[2]),
                 })
-
+ 
             result.append({
                 "car_id": c[0],         
                 "brand": c[1],
                 "model": c[2],
                 "category": c[3],
                 "year": c[4],
-                 "status": bool(c[5]),
+                "status": bool(c[5]),
                 "image_url": c[6],
                 "prices": prices
             })
@@ -67,7 +87,6 @@ def get_all_cars():
     finally:
         conn.close()
         
-# add new car
 @router.post("/cars", response_model=CarOut, status_code=201)
 def add_car(payload: CarCreate):
     conn = get_connection()
@@ -114,15 +133,16 @@ def add_car(payload: CarCreate):
         prices = [{"id": r[0], "day": r[1], "price": float(r[2])} for r in price_rows]
 
         return {
-            "car_id": c[0],
-            "brand": c[1],
-            "model": c[2],
-            "category": c[3],
+         "car_id": c[0],
+         "brand": c[1],
+          "model": c[2],
+           "category": c[3],
             "year": c[4],
             "status": bool(c[5]),
-            "image_url": c[6],
-            "prices": prices
-        }
+              "image_url": c[6],
+               "prices": prices
+          }
+
 
     except Exception as e:
         conn.rollback()
@@ -131,7 +151,57 @@ def add_car(payload: CarCreate):
         conn.close()
 
 
-# update car information
+@router.get("/cars/available", response_model=list[CarOut])
+def get_available_cars():
+    """Get only available cars (for customers)"""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id, brand, model, category, year, status, image_url
+            FROM cars
+            WHERE status = true
+            ORDER BY id DESC
+        """)
+        cars_rows = cur.fetchall()
+
+        result = []
+        for c in cars_rows:
+            car_id = c[0]  
+
+            cur.execute("""
+                SELECT id, day, price
+                FROM car_prices
+                WHERE car_id = %s
+                ORDER BY id ASC
+            """, (car_id,))
+            price_rows = cur.fetchall()
+
+            prices = []
+            for p in price_rows:
+                prices.append({
+                    "id": p[0],
+                    "day": p[1],
+                    "price": float(p[2]),
+                })
+
+            result.append({
+                "car_id": c[0],         
+                "brand": c[1],
+                "model": c[2],
+                "category": c[3],
+                "year": c[4],
+                "status": bool(c[5]),
+                "image_url": c[6],
+                "prices": prices
+            })
+
+        return result
+
+    finally:
+        conn.close()
+
 @router.put("/cars/{car_id}", response_model=CarOut)
 def update_car(car_id: int, payload: CarUpdate):
     data = payload.model_dump(exclude_none=True)
@@ -197,7 +267,6 @@ def update_car(car_id: int, payload: CarUpdate):
         conn.close()
 
 
-# delete car by id 
 @router.delete("/cars/{car_id}")
 def delete_car(car_id: int):
     conn = get_connection()
@@ -217,28 +286,79 @@ def delete_car(car_id: int):
 
     finally:
         conn.close()
+# upload car image
 @router.post("/cars/{car_id}/image")
 def upload_car_image(car_id: int, image: UploadFile = File(...)):
+
     ext = os.path.splitext(image.filename)[1].lower()
     if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Unsupported image type")
 
-    # نحفظ باسم car_id.jpg
     filename = f"{car_id}.jpg"
     file_path = os.path.join(UPLOAD_DIR, filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
 
-    image_url = f"/uploads/cars/{filename}"
+    # 👇 نخزن فقط اسم الملف
+    image_url = filename
 
-    # OPTIONAL: تحديث DB مباشرة هون (بدل ما تعمل update من Flutter)
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("UPDATE cars SET image_url=%s WHERE id=%s", (image_url, car_id))
+        cur.execute(
+            "UPDATE cars SET image_url=%s WHERE id=%s",
+            (image_url, car_id)
+        )
         conn.commit()
     finally:
         conn.close()
 
     return {"image_url": image_url}
+
+# get car prices
+
+@router.get("/admin/cars/{car_id}/prices")
+def get_car_prices(car_id: int):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id, day, price
+            FROM car_prices
+            WHERE car_id=%s
+            ORDER BY id ASC
+        """, (car_id,))
+        rows = cur.fetchall()
+
+        return [
+            {
+                "id": r[0],
+                "day": r[1],
+                "price": float(r[2])
+            }
+            for r in rows
+        ]
+
+    finally:
+        conn.close()
+    # update car price
+@router.put("/admin/cars/{car_id}/prices")
+def update_car_price(car_id: int, payload: dict):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            UPDATE car_prices
+            SET price=%s
+            WHERE car_id=%s AND day=%s
+        """, (payload["price"], car_id, payload["day"]))
+
+        conn.commit()
+
+        return {"message": "Price updated"}
+
+    finally:
+        conn.close()
