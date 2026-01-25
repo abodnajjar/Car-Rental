@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/api_config.dart';
 import '../../model/car_model.dart';
 import 'BookingScreen.dart';
 
@@ -24,7 +25,9 @@ class CarDetailsCustomer extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: car.imageUrl.isNotEmpty
                   ? Image.network(
-                      "http://127.0.0.1:8000/${car.imageUrl}",
+                    Uri.parse(ApiConfig.baseUrl)
+                      .resolve(car.imageUrl)
+                      .toString(),
                       height: 220,
                       width: double.infinity,
                       fit: BoxFit.cover,

@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 
 class ProfileApi {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://localhost:8000', // رابط السيرفر الحقيقي
+      baseUrl: ApiConfig.baseUrl, // رابط السيرفر الحقيقي
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},

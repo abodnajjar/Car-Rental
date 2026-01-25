@@ -1,11 +1,12 @@
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 import '../model/booking_history_model.dart';
 import '../model/booking_model.dart';
 
 class BookingsApi {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'http://127.0.0.1:8000',
+      baseUrl: ApiConfig.baseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},

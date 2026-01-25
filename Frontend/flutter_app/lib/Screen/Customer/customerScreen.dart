@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../profileScreen.dart';
 import '../../api/cars_api.dart';
+import '../../config/api_config.dart';
 import '../../model/car_model.dart';
 import '../../model/car_price_model.dart';
 import 'CarDetailsCustomer.dart';
@@ -116,7 +117,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
               image: car.imageUrl.isNotEmpty
                   ? DecorationImage(
                       image: NetworkImage(
-                        "http://127.0.0.1:8000/${car.imageUrl}",
+                        Uri.parse(ApiConfig.baseUrl).resolve(car.imageUrl).toString(),
                       ),
                       fit: BoxFit.cover,
                     )
