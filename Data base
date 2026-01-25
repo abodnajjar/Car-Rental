@@ -29,13 +29,25 @@ CREATE TABLE car_prices (
     id INT AUTO_INCREMENT PRIMARY KEY,
     car_id INT NOT NULL,
     day ENUM(
-        'monday','tuesday','wednesday',
-        'thursday','friday','saturday','sunday'
-    ),
-    price DECIMAL(10,2),
-    FOREIGN KEY (car_id) REFERENCES cars(id)
-        ON DELETE CASCADE
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday'
+    ) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT fk_car_prices_car
+        FOREIGN KEY (car_id)
+        REFERENCES cars(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT uq_car_day
+        UNIQUE (car_id, day)
 );
+
 
 CREATE TABLE `rentals` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -93,3 +105,5 @@ ALTER TABLE notifications
 
 ALTER TABLE notifications
   ADD UNIQUE KEY uq_notifications_rental_reminder (user_id, rental_id, title);
+ALTER TABLE notifications
+

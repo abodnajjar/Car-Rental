@@ -133,4 +133,5 @@ class BookingDetails {
       bookingStatus: json['booking_status'],
     );
   }
+  
 }

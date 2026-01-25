@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../api/cars_api.dart';
 import '../../../../model/car_model.dart';
 import '../../../../model/car_price_model.dart';
 import '../../../api/car_prices_api.dart';
@@ -19,6 +20,8 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, String?> _errors = {};
 
+  List<CarPrice> _prices = [];
+
   final List<String> _orderedDays = const [
     "sunday",
     "monday",
@@ -32,76 +35,65 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeControllers();
     _loadPrices();
   }
 
-  // ===============================
-  // Initialize controllers safely
-  // ===============================
-  void _initializeControllers() {
+Future<void> _loadPrices() async {
+  setState(() => _loading = true);
+
+  try {
+    final data =
+        await CarPricesApi.getCarPrices(widget.car.carId);
+
+    _controllers.clear();
+
     for (final day in _orderedDays) {
-      _controllers[day] = TextEditingController(text: "0");
+      final found = data.firstWhere(
+        (p) => p.day == day,
+        orElse: () => CarPrice(id: 0, day: day, price: 0),
+      );
+
+      _controllers[day] =
+          TextEditingController(text: found.price.toString());
+      _errors[day] = null;
+    }
+
+    setState(() {
+      _prices = data;
+      _loading = false;
+    });
+  } catch (e) {
+    setState(() => _loading = false);
+  }
+}
+
+
+
+bool _validateAll() {
+  bool valid = true;
+
+  for (final day in _orderedDays) {
+    final controller = _controllers[day];
+    if (controller == null) continue;
+
+    final text = controller.text.trim();
+    final value = double.tryParse(text);
+
+    if (value == null) {
+      _errors[day] = "Invalid number";
+      valid = false;
+    } else if (value < 50 || value > 10000) {
+      _errors[day] = "Price must be 50 - 10000";
+      valid = false;
+    } else {
       _errors[day] = null;
     }
   }
 
-  // ===============================
-  // Load prices from API
-  // ===============================
-  Future<void> _loadPrices() async {
-    setState(() => _loading = true);
+  setState(() {});
+  return valid;
+}
 
-    try {
-      final data =
-          await CarPricesApi.getCarPrices(widget.car.carId);
-
-      for (final p in data) {
-        if (_controllers.containsKey(p.day)) {
-          _controllers[p.day]!.text = p.price.toString();
-        }
-      }
-
-      setState(() => _loading = false);
-    } catch (e) {
-      setState(() => _loading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    }
-  }
-
-  // ===============================
-  // Validate prices
-  // ===============================
-  bool _validateAll() {
-    bool valid = true;
-
-    for (final day in _orderedDays) {
-      final controller = _controllers[day];
-      if (controller == null) continue;
-
-      final text = controller.text.trim();
-      final value = double.tryParse(text);
-
-      if (value == null) {
-        _errors[day] = "Invalid number";
-        valid = false;
-      } else if (value < 50 || value > 10000) {
-        _errors[day] = "Price must be 50 - 10000";
-        valid = false;
-      } else {
-        _errors[day] = null;
-      }
-    }
-
-    setState(() {});
-    return valid;
-  }
-
-  // ===============================
-  // Save all prices (Bulk update)
-  // ===============================
   Future<void> _saveAll() async {
     if (!_validateAll()) return;
 
@@ -111,14 +103,15 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
       final prices = _orderedDays.map((day) {
         return {
           "day": day,
-          "price": double.parse(
-              _controllers[day]!.text.trim()),
+          "price": double.parse(_controllers[day]!.text.trim()),
         };
       }).toList();
 
-      await CarPricesApi.updateAllPrices(
-        carId: widget.car.carId,
-        prices: prices,
+      await CarsApi.updateCar(
+        widget.car.carId,
+        {
+          "prices": prices,
+        },
       );
 
       if (!mounted) return;
@@ -182,30 +175,24 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
                               child: Text(
                                 _dayLabel(day),
                                 style: const TextStyle(
-                                  fontWeight:
-                                      FontWeight.w600,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: TextField(
-                                controller:
-                                    _controllers[day],
+                                controller: _controllers[day],
                                 keyboardType:
-                                    const TextInputType
-                                        .numberWithOptions(
+                                    const TextInputType.numberWithOptions(
                                         decimal: true),
                                 decoration: InputDecoration(
                                   hintText: "Enter price",
-                                  errorText:
-                                      _errors[day],
+                                  errorText: _errors[day],
                                   suffixText: "₪",
-                                  border:
-                                      OutlineInputBorder(
+                                  border: OutlineInputBorder(
                                     borderRadius:
-                                        BorderRadius
-                                            .circular(12),
+                                        BorderRadius.circular(12),
                                   ),
                                 ),
                               ),
@@ -218,23 +205,16 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
                 ),
 
                 Padding(
-                  padding:
-                      const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed:
-                          _saving ? null : _saveAll,
-                      style:
-                          ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.green,
-                        shape:
-                            RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                                  14),
+                      onPressed: _saving ? null : _saveAll,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: _saving
@@ -244,8 +224,7 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
                               "Save Prices",
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight:
-                                    FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                     ),

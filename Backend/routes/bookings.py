@@ -1,12 +1,13 @@
 from fastapi import APIRouter, HTTPException
+from typing import List
 from db_conection import get_connection
-from datetime import datetime, time
 from datetime import datetime, timedelta, date, time
 from schemas.customer_booking import CustomerBookingsResponse
-from schemas.booking import BookingDraftIn, BookingQuoteOut, BookingConfirmIn
+from schemas.booking import BookingDraftIn, BookingOut, BookingQuoteOut, BookingConfirmIn
 from schemas.employee_pending import PendingBookingOut
 from schemas.employee_booking_details import EmployeeBookingDetailsOut
 from schemas.update_booking_status import BookingStatusUpdateIn
+
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -523,6 +524,43 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
             
             "new_status": new_status
         }
+
+    finally:
+        conn.close()
+
+@router.get("", response_model=List[BookingOut])
+def get_all_bookings():
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id, user_id, employee_id, car_id,
+                   pickup_location, dropoff_location,
+                   start_date, end_date,
+                   total_price, status, created_at
+            FROM rentals
+            ORDER BY start_date DESC
+        """)
+
+        rows = cur.fetchall()
+
+        return [
+            {
+                "booking_id": r[0],
+                "user_id": r[1],
+                "employee_id": r[2],
+                "car_id": r[3],
+                "pickup_location": r[4],
+                "dropoff_location": r[5],
+                "start_date": r[6],
+                "end_date": r[7],
+                "total_price": float(r[8]),
+                "status": r[9],
+                "created_at": r[10],
+            }
+            for r in rows
+        ]
 
     finally:
         conn.close()

@@ -1,3 +1,4 @@
+from unittest import result
 from fastapi import APIRouter, HTTPException
 from db_conection import get_connection
 from schemas.car import CarOut, CarCreate,CarUpdate
@@ -75,14 +76,14 @@ def get_all_cars():
                     "day": p[1],
                     "price": float(p[2]),
                 })
-
+ 
             result.append({
                 "car_id": c[0],         
                 "brand": c[1],
                 "model": c[2],
                 "category": c[3],
                 "year": c[4],
-                 "status": bool(c[5]),
+                "status": bool(c[5]),
                 "image_url": c[6],
                 "prices": prices
             })
@@ -139,15 +140,16 @@ def add_car(payload: CarCreate):
         prices = [{"id": r[0], "day": r[1], "price": float(r[2])} for r in price_rows]
 
         return {
-            "car_id": c[0],
-            "brand": c[1],
-            "model": c[2],
-            "category": c[3],
+         "car_id": c[0],
+         "brand": c[1],
+          "model": c[2],
+           "category": c[3],
             "year": c[4],
             "status": bool(c[5]),
-            "image_url": c[6],
-            "prices": prices
-        }
+              "image_url": c[6],
+               "prices": prices
+          }
+
 
     except Exception as e:
         conn.rollback()
@@ -242,28 +244,80 @@ def delete_car(car_id: int):
 
     finally:
         conn.close()
+# upload car image
 @router.post("/cars/{car_id}/image")
 def upload_car_image(car_id: int, image: UploadFile = File(...)):
+
     ext = os.path.splitext(image.filename)[1].lower()
     if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Unsupported image type")
 
     # نحفظ باسم car_id.jpg
-    filename = f"{car_id}.jpg"
+    filename = f"{car_id}{ext}"
     file_path = os.path.join(UPLOAD_DIR, filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(image.file, buffer)
 
-    image_url = f"/uploads/cars/{filename}"
+    # 👇 نخزن فقط اسم الملف
+    image_url = filename
 
-    # OPTIONAL: تحديث DB مباشرة هون (بدل ما تعمل update من Flutter)
     conn = get_connection()
     try:
         cur = conn.cursor()
-        cur.execute("UPDATE cars SET image_url=%s WHERE id=%s", (image_url, car_id))
+        cur.execute(
+            "UPDATE cars SET image_url=%s WHERE id=%s",
+            (image_url, car_id)
+        )
         conn.commit()
     finally:
         conn.close()
 
     return {"image_url": image_url}
+
+# get car prices
+
+@router.get("/admin/cars/{car_id}/prices")
+def get_car_prices(car_id: int):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id, day, price
+            FROM car_prices
+            WHERE car_id=%s
+            ORDER BY id ASC
+        """, (car_id,))
+        rows = cur.fetchall()
+
+        return [
+            {
+                "id": r[0],
+                "day": r[1],
+                "price": float(r[2])
+            }
+            for r in rows
+        ]
+
+    finally:
+        conn.close()
+    # update car price
+@router.put("/admin/cars/{car_id}/prices")
+def update_car_price(car_id: int, payload: dict):
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            UPDATE car_prices
+            SET price=%s
+            WHERE car_id=%s AND day=%s
+        """, (payload["price"], car_id, payload["day"]))
+
+        conn.commit()
+
+        return {"message": "Price updated"}
+
+    finally:
+        conn.close()

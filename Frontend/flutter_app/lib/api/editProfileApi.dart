@@ -4,7 +4,8 @@ import '../config/api_config.dart';
 class Editprofileapi {
   final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: ApiConfig.baseUrl,
+
+      baseUrl: 'http://127.0.0.1:8000'
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {'Content-Type': 'application/json'},
