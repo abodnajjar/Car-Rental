@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../model/car_model.dart';
 import '../../api/bookings_api.dart';
+import 'customerScreen.dart';
+import 'PaymentScreen.dart';
 
 class BookingScreen extends StatefulWidget {
   final Car car;
@@ -22,9 +24,7 @@ class _BookingScreenState extends State<BookingScreen> {
   bool _priceCalculated = false;
   bool _loading = false;
 
-  int _days = 0;
   double _totalPrice = 0;
-  List<Map<String, dynamic>> _breakdown = [];
 
   int? _userId; // ✅ من SharedPreferences
 
@@ -107,9 +107,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
       setState(() {
         _priceCalculated = true;
-        _days = res["days"];
         _totalPrice = (res["total_price"] as num).toDouble();
-        _breakdown = List<Map<String, dynamic>>.from(res["breakdown"]);
       });
     } catch (e) {
       print("CALCULATE PRICE ERROR: $e");
@@ -142,7 +140,14 @@ class _BookingScreenState extends State<BookingScreen> {
         const SnackBar(content: Text("Booking confirmed successfully")),
       );
 
-      Navigator.pop(context);
+Navigator.pushAndRemoveUntil(
+  context,
+  MaterialPageRoute(
+    builder: (context) => const CustomerScreen(
+    ),
+  ),
+  (route) => false,
+);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Failed to confirm booking")),
@@ -222,7 +227,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // ================= Price Result =================
             if (_priceCalculated) ...[
-              Text("Days: $_days"),
               Text(
                 "Total Price: $_totalPrice NIS",
                 style: const TextStyle(
@@ -232,7 +236,6 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               const SizedBox(height: 10),
 
-              ..._breakdown.map((e) => Text("${e['day']}: ${e['price']} NIS")),
 
               const SizedBox(height: 24),
 
@@ -243,7 +246,23 @@ class _BookingScreenState extends State<BookingScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                   ),
-                  onPressed: _confirmBooking,
+
+onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PaymentScreen(
+         userId: _userId!,
+        car: widget.car,
+        pickupLocation: _pickupController.text,
+        dropoffLocation: _dropoffController.text,
+        startDate: _startDate!,
+        endDate: _endDate!,
+        totalPrice: _totalPrice,
+      ),
+    ),
+  );
+},
                   child: const Text("Confirm Booking"),
                 ),
               ),

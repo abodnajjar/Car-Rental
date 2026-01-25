@@ -4,6 +4,7 @@ import '../../api/cars_api.dart';
 import '../../model/car_model.dart';
 import '../../model/car_price_model.dart';
 import 'CarDetailsCustomer.dart';
+import 'BookingHistoryScreen.dart';
 
 class CustomerScreen extends StatefulWidget {
   const CustomerScreen({super.key});
@@ -99,7 +100,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6),
+        ],
       ),
       child: Row(
         children: [
@@ -120,7 +123,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
                   : null,
             ),
             child: car.imageUrl.isEmpty
-                ? const Icon(Icons.directions_car, size: 40, color: Colors.grey)
+                ? const Icon(Icons.directions_car,
+                    size: 40, color: Colors.grey)
                 : null,
           ),
 
@@ -138,10 +142,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(car.category, style: const TextStyle(color: Colors.grey)),
+                Text(car.category,
+                    style: const TextStyle(color: Colors.grey)),
                 const SizedBox(height: 6),
-
-                // ✅ Price from DB
                 Text(
                   "${price.toStringAsFixed(0)} NIS / day",
                   style: const TextStyle(
@@ -149,9 +152,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 4),
-
                 Row(
                   children: [
                     Icon(
@@ -173,21 +174,24 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ),
           ),
 
-          // ================= Book Button =================
+          // ================= Button =================
           ElevatedButton(
             onPressed: car.status
                 ? () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CarDetailsCustomer(car: car),
+                        builder: (context) =>
+                            CarDetailsCustomer(car: car),
                       ),
                     );
                   }
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: car.status ? Colors.blue : Colors.grey.shade300,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              backgroundColor:
+                  car.status ? Colors.blue : Colors.grey.shade300,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -195,7 +199,9 @@ class _CustomerScreenState extends State<CustomerScreen> {
             child: Text(
               "View Details",
               style: TextStyle(
-                color: car.status ? Colors.white : Colors.grey.shade600,
+                color: car.status
+                    ? Colors.white
+                    : Colors.grey.shade600,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -222,7 +228,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 15.0),
+            padding: const EdgeInsets.only(right: 15),
             child: CircleAvatar(
               radius: 25,
               backgroundColor: Colors.grey[350],
@@ -258,20 +264,37 @@ class _CustomerScreenState extends State<CustomerScreen> {
             _currentIndex = index;
           });
 
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const BookingHistoryScreen(),
+              ),
+            );
+          }
+
           if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+              MaterialPageRoute(
+                builder: (context) => const ProfileScreen(),
+              ),
             );
           }
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_today),
             label: 'My Bookings',
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
     );
