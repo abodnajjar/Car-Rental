@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../api/bookings_api.dart';
 import '../../model/booking_model.dart';
 import '../../mock/mock_booking_data.dart';
@@ -86,7 +87,13 @@ class _EmployeeBookingDetailsScreenState
         return;
       }
 
-      await BookingsApi.updateBookingStatus(widget.bookingId, status);
+      final prefs = await SharedPreferences.getInstance();
+      final employeeId = prefs.getInt('user_id');
+      await BookingsApi.updateBookingStatus(
+        widget.bookingId,
+        status,
+        employeeId: employeeId,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +103,6 @@ class _EmployeeBookingDetailsScreenState
           ),
         );
 
-        // Pop back and indicate refresh is needed
         Navigator.pop(context, {
           'bookingId': widget.bookingId,
           'status': status,
@@ -216,7 +222,6 @@ class _EmployeeBookingDetailsScreenState
 
           const SizedBox(height: 30),
 
-          // Action Buttons (only show if status is 'pending')
           if (details.bookingStatus.toLowerCase() == 'pending') ...[
             _actionButton(
               text: _isUpdating ? "Processing..." : "Accept",

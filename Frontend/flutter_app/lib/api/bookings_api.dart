@@ -54,13 +54,19 @@ class BookingsApi {
     }
   }
 
-  /// PUT /bookings/{booking_id}/status
-  /// status: "approved" or "cancelled"
-  static Future<void> updateBookingStatus(int bookingId, String status) async {
+
+  static Future<void> updateBookingStatus(
+    int bookingId,
+    String status, {
+    int? employeeId,
+  }) async {
     try {
       await _dio.put(
         '/bookings/$bookingId/status',
-        data: {'status': status},
+        data: {
+          'status': status,
+          if (employeeId != null) 'employee_id': employeeId,
+        },
       );
     } on DioException catch (e) {
       throw Exception(

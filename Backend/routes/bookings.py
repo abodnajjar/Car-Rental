@@ -449,6 +449,7 @@ def get_active_bookings():
 @router.put("/{booking_id}/status")
 def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
     new_status = payload.status.lower().strip()
+    employee_id = payload.employee_id
 
     allowed_statuses = ["pending", "approved", "active", "completed", "cancelled"]
     if new_status not in allowed_statuses:
@@ -470,10 +471,16 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
             raise HTTPException(404, "Booking not found")
         user_id = row[1]
 
-        cur.execute(
-            "UPDATE rentals SET status=%s WHERE id=%s",
-            (new_status, booking_id)
-        )
+        if employee_id is not None:
+            cur.execute(
+                "UPDATE rentals SET status=%s, employee_id=%s WHERE id=%s",
+                (new_status, employee_id, booking_id)
+            )
+        else:
+            cur.execute(
+                "UPDATE rentals SET status=%s WHERE id=%s",
+                (new_status, booking_id)
+            )
 
         title, message = _status_notification(new_status, booking_id)
         cur.execute(
