@@ -156,6 +156,57 @@ def add_car(payload: CarCreate):
         conn.close()
 
 
+@router.get("/cars/available", response_model=list[CarOut])
+def get_available_cars():
+    """Get only available cars (for customers)"""
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT id, brand, model, category, year, status, image_url
+            FROM cars
+            WHERE status = true
+            ORDER BY id DESC
+        """)
+        cars_rows = cur.fetchall()
+
+        result = []
+        for c in cars_rows:
+            car_id = c[0]  
+
+            cur.execute("""
+                SELECT id, day, price
+                FROM car_prices
+                WHERE car_id = %s
+                ORDER BY id ASC
+            """, (car_id,))
+            price_rows = cur.fetchall()
+
+            prices = []
+            for p in price_rows:
+                prices.append({
+                    "id": p[0],
+                    "day": p[1],
+                    "price": float(p[2]),
+                })
+
+            result.append({
+                "car_id": c[0],         
+                "brand": c[1],
+                "model": c[2],
+                "category": c[3],
+                "year": c[4],
+                "status": bool(c[5]),
+                "image_url": c[6],
+                "prices": prices
+            })
+
+        return result
+
+    finally:
+        conn.close()
+
 # update car information
 @router.put("/cars/{car_id}", response_model=CarOut)
 def update_car(car_id: int, payload: CarUpdate):
