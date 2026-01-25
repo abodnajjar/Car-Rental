@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../config/api_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../api/bookings_api.dart';
@@ -119,7 +120,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                       booking.imageUrl!.isNotEmpty
                   ? DecorationImage(
                       image: NetworkImage(
-                        "http://127.0.0.1:8000/${booking.imageUrl}",
+                        Uri.parse(ApiConfig.baseUrl)
+                            .resolve(booking.imageUrl!)
+                            .toString(),
                       ),
                       fit: BoxFit.cover,
                     )

@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
 import 'dart:typed_data';
+import '../config/api_config.dart';
 import '../model/car_model.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class CarsApi {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl:"http://127.0.0.1:8000",
+      baseUrl: ApiConfig.baseUrl,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
       headers: {"Content-Type": "application/json"},

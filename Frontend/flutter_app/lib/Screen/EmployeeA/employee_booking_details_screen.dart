@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../api/bookings_api.dart';
 import '../../model/booking_model.dart';
 import '../../mock/mock_booking_data.dart';
@@ -86,7 +87,13 @@ class _EmployeeBookingDetailsScreenState
         return;
       }
 
-      await BookingsApi.updateBookingStatus(widget.bookingId, status);
+      final prefs = await SharedPreferences.getInstance();
+      final employeeId = prefs.getInt('user_id');
+      await BookingsApi.updateBookingStatus(
+        widget.bookingId,
+        status,
+        employeeId: employeeId,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +103,6 @@ class _EmployeeBookingDetailsScreenState
           ),
         );
 
-        // Pop back and indicate refresh is needed
         Navigator.pop(context, {
           'bookingId': widget.bookingId,
           'status': status,
@@ -109,6 +115,68 @@ class _EmployeeBookingDetailsScreenState
             content: Text('Error: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _toggleAvailability() async {
+    if (_details == null || _isUpdating) return;
+
+    setState(() {
+      _isUpdating = true;
+    });
+
+    final isAvailable = !_details!.car.carStatus;
+
+    try {
+      if (kUseMockData) {
+        MockBookingData.updateCarAvailability(_details!.carId, isAvailable);
+      } else {
+        await BookingsApi.updateCarAvailability(_details!.carId, isAvailable);
+      }
+
+      if (mounted) {
+        setState(() {
+          _details = BookingDetails(
+            bookingId: _details!.bookingId,
+            carId: _details!.carId,
+            customer: _details!.customer,
+            car: CarInfo(
+              brand: _details!.car.brand,
+              model: _details!.car.model,
+              category: _details!.car.category,
+              year: _details!.car.year,
+              carStatus: isAvailable,
+              imageUrl: _details!.car.imageUrl,
+            ),
+            pickupLocation: _details!.pickupLocation,
+            dropoffLocation: _details!.dropoffLocation,
+            startDate: _details!.startDate,
+            endDate: _details!.endDate,
+            totalPrice: _details!.totalPrice,
+            bookingStatus: _details!.bookingStatus,
+          );
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isAvailable ? 'Car marked available.' : 'Car marked unavailable.',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
         );
       }
     } finally {
@@ -216,7 +284,6 @@ class _EmployeeBookingDetailsScreenState
 
           const SizedBox(height: 30),
 
-          // Action Buttons (only show if status is 'pending')
           if (details.bookingStatus.toLowerCase() == 'pending') ...[
             _actionButton(
               text: _isUpdating ? "Processing..." : "Accept",
@@ -280,7 +347,7 @@ class _EmployeeBookingDetailsScreenState
                     ? "Mark Unavailable"
                     : "Mark Available",
                 subtitle: "Update car availability status.",
-                onTap: () => _handleEmployeeAction("availability updated"),
+                onTap: _isUpdating ? null : _toggleAvailability,
               ),
               _actionTile(
                 icon: Icons.report,

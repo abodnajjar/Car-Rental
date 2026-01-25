@@ -18,7 +18,32 @@ def cars_count():
     finally:
         conn.close()
 
-# return all cars 
+# ===============================
+# UPDATE car availability
+# ===============================
+@router.put("/cars/{car_id}/availability")
+def update_car_availability(car_id: int, payload: dict):
+    if "status" not in payload:
+        raise HTTPException(status_code=400, detail="status is required")
+
+    conn = get_connection()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "UPDATE cars SET status=%s WHERE id=%s",
+            (payload["status"], car_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Car not found")
+
+        conn.commit()
+        return {"message": "Car availability updated", "car_id": car_id}
+    finally:
+        conn.close()
+
+# ===============================
+# GET all cars
+# ===============================
 @router.get("/cars", response_model=list[CarOut])
 def get_all_cars():
     conn = get_connection()

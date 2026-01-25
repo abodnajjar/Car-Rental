@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../profileScreen.dart';
 import '../../api/bookings_api.dart';
+import '../../api/cars_api.dart';
+import '../../config/api_config.dart';
 import '../../model/booking_model.dart';
+import '../../model/car_model.dart';
 import 'employee_booking_details_screen.dart';
 import '../../mock/mock_booking_data.dart';
 
@@ -18,13 +21,22 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   String? _error;
   List<PendingBooking> _bookings = [];
 
+  bool _carsLoading = false;
+  String? _carsError;
+  List<Car> _cars = [];
+  List<Car> _filteredCars = [];
+  String _carSearch = '';
+
   @override
   void initState() {
     super.initState();
     _loadBookings();
   }
 
+  bool get _isBookingTab => _currentIndex <= 2;
+
   String get _currentStatus {
+    if (!_isBookingTab) return 'pending';
     switch (_currentIndex) {
       case 1:
         return 'accepted';
@@ -36,7 +48,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   Future<void> _loadBookings() async {
-    if (_currentIndex == 3) return;
+    if (!_isBookingTab) return;
 
     setState(() {
       _isLoading = true;
@@ -65,6 +77,38 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  Future<void> _loadCars() async {
+    setState(() {
+      _carsLoading = true;
+      _carsError = null;
+    });
+
+    try {
+      final cars = await CarsApi.getCars();
+      setState(() {
+        _cars = List<Car>.from(cars);
+        _filteredCars = _applyCarFilter(_carSearch, cars);
+        _carsLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _carsError = e.toString();
+        _carsLoading = false;
+      });
+    }
+  }
+
+  List<Car> _applyCarFilter(String query, List<Car> source) {
+    if (query.trim().isEmpty) return List<Car>.from(source);
+
+    final q = query.toLowerCase();
+    return source.where((c) {
+      return c.brand.toLowerCase().contains(q) ||
+          c.model.toLowerCase().contains(q) ||
+          c.category.toLowerCase().contains(q);
+    }).toList();
   }
 
   String _formatDate(DateTime dt) {
@@ -127,7 +171,7 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   void _onNavTap(int index) {
-    if (index == 3) {
+    if (index == 4) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -140,7 +184,11 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     setState(() {
       _currentIndex = index;
     });
-    _loadBookings();
+    if (_isBookingTab) {
+      _loadBookings();
+    } else {
+      _loadCars();
+    }
   }
 
   @override
@@ -199,6 +247,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
             label: 'Rejected',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.directions_car),
+            label: 'Cars',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
@@ -208,6 +260,10 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   }
 
   Widget _buildBody() {
+    if (!_isBookingTab) {
+      return _buildCarsBody();
+    }
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -373,6 +429,66 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     );
   }
 
+  Widget _buildCarsBody() {
+    return Column(
+      children: [
+        _employeeHeader(),
+        _carsHeader(),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadCars,
+            child: _carsLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _carsError != null
+                    ? ListView(
+                        padding: const EdgeInsets.all(24),
+                        children: [
+                          const SizedBox(height: 40),
+                          const Icon(Icons.error_outline,
+                              color: Colors.red, size: 64),
+                          const SizedBox(height: 12),
+                          Center(
+                            child: Text(
+                              _carsError!,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: _loadCars,
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      )
+                    : _filteredCars.isEmpty
+                        ? ListView(
+                            padding: const EdgeInsets.all(24),
+                            children: const [
+                              SizedBox(height: 40),
+                              Icon(Icons.directions_car,
+                                  color: Colors.grey, size: 64),
+                              SizedBox(height: 12),
+                              Center(
+                                child: Text(
+                                  'No cars found for this search.',
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _filteredCars.length,
+                            itemBuilder: (context, index) {
+                              return _buildCarCard(_filteredCars[index]);
+                            },
+                          ),
+          ),
+        ),
+      ],
+    );
+  }
+
   List<PendingBooking> _filterBookings(
     List<PendingBooking> bookings,
     String status,
@@ -391,6 +507,177 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       }
       return bStatus == 'pending';
     }).toList();
+  }
+
+  Widget _carsHeader() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.directions_car, color: Colors.blue),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'All Cars',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              Text(
+                '${_filteredCars.length} items',
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Search by brand, model, or category',
+              prefixIcon: const Icon(Icons.search),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onChanged: (v) {
+              setState(() {
+                _carSearch = v;
+                _filteredCars = _applyCarFilter(v, _cars);
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCarCard(Car car) {
+    final price = _minPrice(car);
+    final isAvailable = car.status;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 14),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 110,
+                height: 80,
+                child: car.imageUrl.isNotEmpty
+                    ? Image.network(
+                        _buildImageUrl(car.imageUrl),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stack) => Container(
+                          color: Colors.grey.shade200,
+                          child: const Icon(Icons.directions_car,
+                              color: Colors.grey),
+                        ),
+                      )
+                    : Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(
+                          Icons.directions_car,
+                          color: Colors.grey,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '${car.brand} ${car.model}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Container(
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isAvailable
+                              ? Colors.green.withOpacity(0.12)
+                              : Colors.red.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          isAvailable ? 'Available' : 'Unavailable',
+                          style: TextStyle(
+                            color: isAvailable ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${car.category} • ${car.year}',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  if (price != null)
+                    Text(
+                      '${price.toStringAsFixed(0)} NIS / day',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  if (price == null)
+                    const Text(
+                      'Price not set',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  double? _minPrice(Car car) {
+    if (car.prices.isEmpty) return null;
+    double minPrice = car.prices.first.price;
+    for (final p in car.prices) {
+      if (p.price < minPrice) minPrice = p.price;
+    }
+    return minPrice;
+  }
+
+  String _buildImageUrl(String img) {
+    if (img.trim().isEmpty) return '';
+    if (img.startsWith('http://') || img.startsWith('https://')) return img;
+    final base = ApiConfig.baseUrl.endsWith('/')
+        ? ApiConfig.baseUrl.substring(0, ApiConfig.baseUrl.length - 1)
+        : ApiConfig.baseUrl;
+    final path = img.startsWith('/') ? img : '/$img';
+    return '$base$path';
   }
 
   Widget _buildBookingCard(PendingBooking booking) {

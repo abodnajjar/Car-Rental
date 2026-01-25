@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../api/cars_api.dart';
+import '../../../config/api_config.dart';
 import '../../../model/car_model.dart';
 import 'EditCar.dart';
 import 'CarPricesScreen.dart';
@@ -17,7 +18,7 @@ class _CarsScreenState extends State<CarsScreen> {
   List<Car> _filteredCars = [];
   bool _loading = true;
 
-  String get _apiBaseUrl => "http://127.0.0.1:8000";
+  String get _apiBaseUrl => ApiConfig.baseUrl;
 
   String _buildImageUrl(String img) {
     var v = img.trim();
