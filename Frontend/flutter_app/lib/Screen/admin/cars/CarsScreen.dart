@@ -184,7 +184,6 @@ class _CarsScreenState extends State<CarsScreen> {
         ),
         child: Row(
           children: [
-            // ✅✅✅ Image like your design (Container + DecorationImage)
             Container(
               width: 110,
               height: 80,

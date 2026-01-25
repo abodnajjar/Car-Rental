@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 
-// Admin Screens
 import 'dashboard_screen.dart';
 import './employees/employees_screen.dart';
 import './cars/CarsScreen.dart';
 import 'bookings/booked_cars_screen.dart';
 
-// Profile
 import '../profileScreen.dart';
 
 class AdminLayout extends StatefulWidget {
@@ -19,7 +17,6 @@ class AdminLayout extends StatefulWidget {
 class _AdminLayoutState extends State<AdminLayout> {
   int _currentIndex = 0;
 
-  // ================= Titles =================
   final List<String> _titles = [
     "Dashboard",
     "Employees",
@@ -27,7 +24,6 @@ class _AdminLayoutState extends State<AdminLayout> {
     "Bookings",
   ];
 
-  // ================= Screens =================
   final List<Widget> _screens = [
     DashboardScreen(),
     EmployeesScreen(),
@@ -40,7 +36,6 @@ class _AdminLayoutState extends State<AdminLayout> {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
 
-      // ================= AppBar =================
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 71, 113, 241),
         elevation: 0,
@@ -81,10 +76,8 @@ class _AdminLayoutState extends State<AdminLayout> {
         ],
       ),
 
-      // ================= Body =================
       body: _screens[_currentIndex],
 
-      // ================= Bottom Navigation =================
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,

@@ -133,7 +133,6 @@ class _EditprofileScreenState extends State<EditprofileScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    // Full Name
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -169,7 +168,6 @@ class _EditprofileScreenState extends State<EditprofileScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Email
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -205,7 +203,6 @@ class _EditprofileScreenState extends State<EditprofileScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Phone
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -241,7 +238,6 @@ class _EditprofileScreenState extends State<EditprofileScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Role (غير قابل للتعديل)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -274,7 +270,6 @@ class _EditprofileScreenState extends State<EditprofileScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Salary → يظهر فقط للـ Employee
                     if (role.toLowerCase() == "employee")
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,

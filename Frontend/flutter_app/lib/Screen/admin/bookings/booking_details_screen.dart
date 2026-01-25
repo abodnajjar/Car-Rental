@@ -30,8 +30,6 @@ class BookingDetailsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-
-      // ================= AppBar =================
       appBar: AppBar(
         title: const Text("Booking Details"),
         backgroundColor: const Color.fromARGB(255, 71, 113, 241),
@@ -70,14 +68,11 @@ class BookingDetailsScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 30),
-
-            // ================= Action Buttons =================
             if (status == "Active") ...[
               _actionButton(
                 text: "Mark as Finished",
                 color: Colors.green,
                 onPressed: () {
-                  // TODO: update booking status
                 },
               ),
               const SizedBox(height: 12),
@@ -87,7 +82,6 @@ class BookingDetailsScreen extends StatelessWidget {
               text: "Cancel Booking",
               color: Colors.redAccent,
               onPressed: () {
-                // TODO: cancel booking
               },
             ),
           ],
@@ -127,8 +121,6 @@ class BookingDetailsScreen extends StatelessWidget {
       ),
     );
   }
-
-  // ================= Info Row =================
   Widget _infoRow(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -152,8 +144,6 @@ class BookingDetailsScreen extends StatelessWidget {
       ),
     );
   }
-
-  // ================= Status Row =================
   Widget _statusRow(String status) {
     Color color;
     switch (status) {
@@ -199,8 +189,6 @@ class BookingDetailsScreen extends StatelessWidget {
       ],
     );
   }
-
-  // ================= Action Button =================
   Widget _actionButton({
     required String text,
     required Color color,

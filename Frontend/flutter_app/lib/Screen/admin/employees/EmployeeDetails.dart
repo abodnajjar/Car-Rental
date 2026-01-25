@@ -25,9 +25,6 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
         TextEditingController(text: widget.employee.salary.toString());
   }
 
-  // ================================
-  // Update salary
-  // ================================
   Future<void> _saveSalary() async {
     final newSalary = double.tryParse(salaryController.text);
 
@@ -50,7 +47,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
         const SnackBar(content: Text("Salary updated successfully")),
       );
 
-      Navigator.pop(context, true); // 👈 return success
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),

@@ -109,7 +109,6 @@ def _status_notification(status: str, booking_id: int, car_brand: str = "", car_
         )
     return ("Booking update", f"Your booking #{booking_id} status is now '{status}'.")
 
-# first request to know the price of booking
 @router.post("/price", response_model=BookingQuoteOut)
 def price_booking(payload: BookingDraftIn):
     validate_booking_date(payload.start_date)
@@ -134,7 +133,6 @@ def price_booking(payload: BookingDraftIn):
     finally:
         conn.close()
 
-# to add the booking after checking all things
 @router.post("/confirm")
 def confirm_booking(payload: BookingConfirmIn):
     validate_booking_date(payload.start_date)
@@ -218,7 +216,6 @@ def confirm_booking(payload: BookingConfirmIn):
     finally:
         conn.close()
 
-# get for the customer all booking with know the id
 @router.get("/customer/{customer_id}", response_model=CustomerBookingsResponse)
 def get_customer_bookings(customer_id: int):
     conn = get_connection()
@@ -274,7 +271,6 @@ def get_customer_bookings(customer_id: int):
     finally:
         conn.close()
 
-# get for the employe all care that status is pending 
 @router.get("/pending", response_model=list[PendingBookingOut])
 def get_pending_bookings():
     conn = get_connection()
@@ -363,7 +359,6 @@ def get_bookings_by_status(status: str):
     finally:
         conn.close()
 
-# show booking details to rject or accept the thing
 @router.get("/details/{booking_id}", response_model=EmployeeBookingDetailsOut)
 def get_booking_details_for_employee(booking_id: int):
     conn = get_connection()
@@ -421,7 +416,6 @@ def get_booking_details_for_employee(booking_id: int):
     finally:
         conn.close()
 
-# get the active for admin if neeed 
 @router.get("/active")
 def get_active_bookings():
     conn = get_connection()
@@ -479,7 +473,6 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
     try:
         cur = conn.cursor()
 
-        # Get booking + car details
         cur.execute(
             """
             SELECT r.id, r.user_id, c.brand, c.model, r.total_price 
@@ -495,7 +488,6 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
         
         booking_id_check, user_id, car_brand, car_model, total_price = row
 
-        # Update booking status
         if employee_id is not None:
             cur.execute(
                 "UPDATE rentals SET status=%s, employee_id=%s WHERE id=%s",
@@ -507,7 +499,6 @@ def update_booking_status(booking_id: int, payload: BookingStatusUpdateIn):
                 (new_status, booking_id)
             )
 
-        # Create notification WITH car details
         title, message = _status_notification(new_status, booking_id, car_brand, car_model, total_price)
         cur.execute(
             """

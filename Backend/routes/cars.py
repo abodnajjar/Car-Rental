@@ -6,7 +6,6 @@ import os, shutil
 UPLOAD_DIR = "uploads/cars"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 router = APIRouter(tags=["Cars"])
-# return the number of cars we have
 @router.get("/cars/count")
 def cars_count():
     conn = get_connection()
@@ -17,9 +16,7 @@ def cars_count():
     finally:
         conn.close()
 
-# ===============================
-# UPDATE car availability
-# ===============================
+
 @router.put("/cars/{car_id}/availability")
 def update_car_availability(car_id: int, payload: dict):
     if "status" not in payload:
@@ -40,9 +37,6 @@ def update_car_availability(car_id: int, payload: dict):
     finally:
         conn.close()
 
-# ===============================
-# GET all cars
-# ===============================
 @router.get("/cars", response_model=list[CarOut])
 def get_all_cars():
     conn = get_connection()
@@ -92,7 +86,6 @@ def get_all_cars():
     finally:
         conn.close()
         
-# add new car
 @router.post("/cars", response_model=CarOut, status_code=201)
 def add_car(payload: CarCreate):
     conn = get_connection()
@@ -207,7 +200,6 @@ def get_available_cars():
     finally:
         conn.close()
 
-# update car information
 @router.put("/cars/{car_id}", response_model=CarOut)
 def update_car(car_id: int, payload: CarUpdate):
     data = payload.model_dump(exclude_none=True)
@@ -273,7 +265,6 @@ def update_car(car_id: int, payload: CarUpdate):
         conn.close()
 
 
-# delete car by id 
 @router.delete("/cars/{car_id}")
 def delete_car(car_id: int):
     conn = get_connection()
@@ -299,7 +290,6 @@ def upload_car_image(car_id: int, image: UploadFile = File(...)):
     if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Unsupported image type")
 
-    # نحفظ باسم car_id.jpg
     filename = f"{car_id}.jpg"
     file_path = os.path.join(UPLOAD_DIR, filename)
 
@@ -308,7 +298,6 @@ def upload_car_image(car_id: int, image: UploadFile = File(...)):
 
     image_url = f"/uploads/cars/{filename}"
 
-    # OPTIONAL: تحديث DB مباشرة هون (بدل ما تعمل update من Flutter)
     conn = get_connection()
     try:
         cur = conn.cursor()

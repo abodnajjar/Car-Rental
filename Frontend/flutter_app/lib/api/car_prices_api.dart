@@ -7,9 +7,6 @@ class CarPricesApi {
     BaseOptions(baseUrl: ApiConfig.baseUrl),
   );
 
-  // ===============================
-  // GET prices for one car
-  // ===============================
   static Future<List<CarPrice>> getCarPrices(int carId) async {
     final res = await _dio.get("/admin/cars/$carId/prices");
 
@@ -18,9 +15,6 @@ class CarPricesApi {
         .toList();
   }
 
-  // ===============================
-  // UPDATE price (existing)
-  // ===============================
   static Future<void> updateCarPrice({
     required int carId,
     required String day,

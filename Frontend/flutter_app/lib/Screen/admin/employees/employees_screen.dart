@@ -22,9 +22,6 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
     _loadEmployees();
   }
 
-  // ================================
-  // Load employees from API
-  // ================================
 Future<void> _loadEmployees() async {
   try {
     debugPrint("CALLING API...");
@@ -48,9 +45,6 @@ Future<void> _loadEmployees() async {
   }
 }
 
-  // ================================
-  // Live search filter
-  // ================================
   void _onSearch(String value) {
     setState(() {
       _filteredEmployees = _allEmployees
@@ -63,9 +57,6 @@ Future<void> _loadEmployees() async {
     });
   }
 
-  // ================================
-  // Confirm delete dialog
-  // ================================
   void _confirmDelete(Employee emp) {
     showDialog(
       context: context,
@@ -94,9 +85,6 @@ Future<void> _loadEmployees() async {
     );
   }
 
-  // ================================
-  // Delete employee
-  // ================================
   Future<void> _deleteEmployee(String uid) async {
     try {
       await EmployeesApi.deleteEmployee(uid);
@@ -107,7 +95,7 @@ Future<void> _loadEmployees() async {
         const SnackBar(content: Text("Employee deleted")),
       );
 
-      _loadEmployees(); // 🔄 refresh
+      _loadEmployees();
     } catch (e) {
       if (!mounted) return;
 
@@ -124,7 +112,6 @@ Future<void> _loadEmployees() async {
 
       body: Column(
         children: [
-          // 🔍 Search Box
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
@@ -141,10 +128,6 @@ Future<void> _loadEmployees() async {
               ),
             ),
           ),
-
-          // ================================
-          // Employees List
-          // ================================
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
@@ -183,9 +166,6 @@ Future<void> _loadEmployees() async {
     );
   }
 
-  // ================================
-  // Employee Card
-  // ================================
   Widget _employeeCard(Employee emp) {
     return InkWell(
       onTap: () async {

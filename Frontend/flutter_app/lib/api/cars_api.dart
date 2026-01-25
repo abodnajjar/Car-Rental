@@ -30,8 +30,8 @@ class CarsApi {
  static Future<void> uploadCarImage(
     int carId, {
     required String fileName,
-    Uint8List? bytes,   // web
-    String? filePath,   // mobile
+    Uint8List? bytes,
+    String? filePath,
   }) async {
     MultipartFile file;
 

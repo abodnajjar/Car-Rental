@@ -23,9 +23,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     _loadUserAndBookings();
   }
 
-  // =========================
-  // Load user id + bookings
-  // =========================
   Future<void> _loadUserAndBookings() async {
     final prefs = await SharedPreferences.getInstance();
     _userId = prefs.getInt("user_id");
@@ -49,9 +46,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     }
   }
 
-  // =========================
-  // UI
-  // =========================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,9 +68,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
     );
   }
 
-  // =========================
-  // Booking Card
-  // =========================
   Widget _bookingCard(BookingHistoryItem booking) {
     Color statusColor;
 
@@ -109,7 +100,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
       ),
       child: Row(
         children: [
-          // ================= Image =================
           Container(
             width: 90,
             height: 70,
@@ -135,7 +125,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
 
           const SizedBox(width: 12),
 
-          // ================= Info =================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +155,6 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
             ),
           ),
 
-          // ================= Status =================
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(

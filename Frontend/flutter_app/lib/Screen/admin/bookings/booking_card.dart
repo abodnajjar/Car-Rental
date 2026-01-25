@@ -38,7 +38,6 @@ class BookingCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // ================= Car Image =================
             Container(
               width: 70,
               height: 70,
@@ -54,8 +53,6 @@ class BookingCard extends StatelessWidget {
             ),
 
             const SizedBox(width: 16),
-
-            // ================= Booking Info =================
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,8 +77,6 @@ class BookingCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // ================= Status + Arrow =================
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -115,8 +110,6 @@ class BookingCard extends StatelessWidget {
       ),
     );
   }
-
-  // ================= Status Color =================
   Color _getStatusColor(String status) {
     switch (status) {
       case "Active":

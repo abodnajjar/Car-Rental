@@ -15,13 +15,13 @@ class Employee {
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      uid: json['uid'].toString(),               // ✅ uid
-      fullName: json['full_name'],               // ✅ full_name
+      uid: json['uid'].toString(),
+      fullName: json['full_name'],
       email: json['email'],
       phone: json['phone'],
       salary: json['salary'] == null
           ? 0.0
-          : (json['salary'] as num).toDouble(),  // ✅ safe
+          : (json['salary'] as num).toDouble(),
     );
   }
 }

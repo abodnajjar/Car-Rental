@@ -36,9 +36,6 @@ class _EditCarScreenState extends State<EditCarScreen> {
     _status = widget.car.status;
   }
 
-  // ================================
-  // Update car
-  // ================================
   Future<void> _update() async {
     if (_brandController.text.isEmpty ||
         _modelController.text.isEmpty ||
@@ -64,7 +61,7 @@ class _EditCarScreenState extends State<EditCarScreen> {
 
       if (!mounted) return;
 
-      Navigator.pop(context, true); // ✅ notify update
+      Navigator.pop(context, true);
     } catch (e) {
       _showMessage(e.toString());
     } finally {
@@ -77,9 +74,6 @@ class _EditCarScreenState extends State<EditCarScreen> {
         .showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  // ================================
-  // UI
-  // ================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,9 +129,6 @@ class _EditCarScreenState extends State<EditCarScreen> {
     );
   }
 
-  // ================================
-  // Input helper
-  // ================================
   Widget _input(
     String label,
     TextEditingController controller, {

@@ -25,9 +25,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     _loadCars();
   }
 
-  // ================================
-  // Load cars from API
-  // ================================
   Future<void> _loadCars() async {
     try {
       final data = await CarsApi.getCars();
@@ -42,9 +39,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     }
   }
 
-  // ================================
-  // Get today price from DB
-  // ================================
   double _getTodayPriceFromDb(Car car) {
     final today = DateTime.now().weekday;
 
@@ -68,9 +62,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     return todayPrice.price;
   }
 
-  // ================================
-  // Build body
-  // ================================
   Widget _buildBody() {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
@@ -89,9 +80,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // ================================
-  // Car Card
-  // ================================
   Widget _carCard(Car car) {
     final price = _getTodayPriceFromDb(car);
 
@@ -107,7 +95,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
       ),
       child: Row(
         children: [
-          // ================= Image =================
           Container(
             width: 110,
             height: 80,
@@ -131,7 +118,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
 
           const SizedBox(width: 12),
 
-          // ================= Info =================
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,7 +161,6 @@ class _CustomerScreenState extends State<CustomerScreen> {
             ),
           ),
 
-          // ================= Button =================
           ElevatedButton(
             onPressed: car.status
                 ? () {
@@ -212,15 +197,10 @@ class _CustomerScreenState extends State<CustomerScreen> {
     );
   }
 
-  // ================================
-  // Main build
-  // ================================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[200],
-
-      // ================= AppBar =================
       appBar: AppBar(
         leading: Image.asset("assets/carRental.png", height: 100),
         title: const Text(
@@ -252,11 +232,7 @@ class _CustomerScreenState extends State<CustomerScreen> {
         toolbarHeight: 100,
         backgroundColor: Colors.white,
       ),
-
-      // ================= Body =================
       body: _buildBody(),
-
-      // ================= Bottom Navigation =================
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
