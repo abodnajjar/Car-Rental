@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../model/booking_model.dart';
+import '../model/booking_history_model.dart';
 
 class BookingsApi {
   static final Dio _dio = Dio(
@@ -148,5 +149,30 @@ class BookingsApi {
       );
     }
   }
+
+
+  /// GET /bookings/customer/{customer_id}
+/// ترجع جميع الحجوزات الخاصة بالمستخدم
+/// (pending / approved / completed / cancelled ...)
+static Future<List<BookingHistoryItem>> getBookingHistory(
+  int customerId,
+) async {
+  try {
+    final res = await _dio.get('/bookings/customer/$customerId');
+
+    final data = res.data as Map<String, dynamic>;
+    final list = data['bookings'] as List;
+
+    return list
+        .map((e) => BookingHistoryItem.fromJson(e))
+        .toList();
+  } on DioException catch (e) {
+    throw Exception(
+      e.response?.data ?? 'Failed to load booking history',
+    );
+  }
+}
+
+
 
 }

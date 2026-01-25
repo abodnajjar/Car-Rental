@@ -78,7 +78,7 @@ class _EmployeeDetailsScreenState extends State<EmployeeDetailsScreen> {
             _infoTile("Phone", emp.phone),
 
             const SizedBox(height: 20),
-
+            
             const Text(
               "Salary",
               style: TextStyle(fontWeight: FontWeight.bold),
