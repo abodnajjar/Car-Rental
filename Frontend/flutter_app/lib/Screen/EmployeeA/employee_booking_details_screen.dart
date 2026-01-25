@@ -395,46 +395,35 @@ class _EmployeeBookingDetailsScreenState
   }
 
   Widget _carImage(String? imageUrl) {
-    final borderRadius = BorderRadius.circular(16);
-
-    final imageWidget = (imageUrl != null && imageUrl.isNotEmpty)
-        ? (imageUrl.startsWith('http')
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => const Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-              )
-            : Image.asset(
-                'assets/car_images/$imageUrl',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stack) => const Icon(
-                  Icons.directions_car,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-              ))
-        : const Icon(
-            Icons.directions_car,
-            size: 80,
-            color: Colors.grey,
-          );
+    final imgUrl = imageUrl ?? '';
+    final useNetwork = imgUrl.startsWith('http');
 
     return Container(
       width: double.infinity,
       height: 200,
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        borderRadius: borderRadius,
+        borderRadius: BorderRadius.circular(16),
         color: Colors.grey[300],
+        image: imgUrl.isNotEmpty
+            ? DecorationImage(
+                image: useNetwork
+                    ? NetworkImage(imgUrl) as ImageProvider
+                    : AssetImage('assets/car_images/$imgUrl'),
+                fit: BoxFit.cover,
+                onError: (exception, stackTrace) {
+                  debugPrint("IMAGE ERROR: $exception");
+                },
+              )
+            : null,
       ),
-      child: ClipRRect(
-        borderRadius: borderRadius,
-        child: imageWidget,
-      ),
+      child: imgUrl.isEmpty
+          ? const Icon(
+              Icons.directions_car,
+              size: 80,
+              color: Colors.grey,
+            )
+          : null,
     );
   }
 
