@@ -1,6 +1,6 @@
 import '../model/booking_model.dart';
 
-const bool kUseMockData = false;
+const bool kUseMockData = true;
 
 class MockBookingData {
   static final DateTime _seedNow = DateTime.now();
@@ -53,6 +53,7 @@ class MockBookingData {
   static final Map<int, BookingDetails> _detailsById = {
     101: BookingDetails(
       bookingId: 101,
+      carId: 7,
       customer: CustomerInfo(
         fullName: 'Sara Johnson',
         email: 'sara.johnson@example.com',
@@ -77,6 +78,7 @@ class MockBookingData {
     ),
     102: BookingDetails(
       bookingId: 102,
+      carId: 3,
       customer: CustomerInfo(
         fullName: 'Ali Ahmed',
         email: 'ali.ahmed@example.com',
@@ -101,6 +103,7 @@ class MockBookingData {
     ),
     103: BookingDetails(
       bookingId: 103,
+      carId: 11,
       customer: CustomerInfo(
         fullName: 'Emily Chen',
         email: 'emily.chen@example.com',
@@ -167,5 +170,49 @@ class MockBookingData {
         bookingStatus: status,
       );
     }
+  }
+
+  static void updateCarAvailability(int carId, bool isAvailable) {
+    for (var i = 0; i < _employeeBookings.length; i++) {
+      final booking = _employeeBookings[i];
+      if (booking.carId == carId) {
+        _employeeBookings[i] = PendingBooking(
+          bookingId: booking.bookingId,
+          userId: booking.userId,
+          carId: booking.carId,
+          imageUrl: booking.imageUrl,
+          pickupLocation: booking.pickupLocation,
+          dropoffLocation: booking.dropoffLocation,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          totalPrice: booking.totalPrice,
+          bookingStatus: booking.bookingStatus,
+          createdAt: booking.createdAt,
+        );
+      }
+    }
+
+    _detailsById.updateAll((key, detail) {
+      if (detail.carId != carId) return detail;
+      return BookingDetails(
+        bookingId: detail.bookingId,
+        carId: detail.carId,
+        customer: detail.customer,
+        car: CarInfo(
+          brand: detail.car.brand,
+          model: detail.car.model,
+          category: detail.car.category,
+          year: detail.car.year,
+          carStatus: isAvailable,
+          imageUrl: detail.car.imageUrl,
+        ),
+        pickupLocation: detail.pickupLocation,
+        dropoffLocation: detail.dropoffLocation,
+        startDate: detail.startDate,
+        endDate: detail.endDate,
+        totalPrice: detail.totalPrice,
+        bookingStatus: detail.bookingStatus,
+      );
+    });
   }
 }

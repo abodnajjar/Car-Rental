@@ -96,6 +96,7 @@ class CarInfo {
 
 class BookingDetails {
   final int bookingId;
+  final int carId;
   final CustomerInfo customer;
   final CarInfo car;
   final String? pickupLocation;
@@ -107,6 +108,7 @@ class BookingDetails {
 
   BookingDetails({
     required this.bookingId,
+    required this.carId,
     required this.customer,
     required this.car,
     this.pickupLocation,
@@ -120,6 +122,7 @@ class BookingDetails {
   factory BookingDetails.fromJson(Map<String, dynamic> json) {
     return BookingDetails(
       bookingId: json['booking_id'],
+      carId: json['car_id'],
       customer: CustomerInfo.fromJson(json['customer']),
       car: CarInfo.fromJson(json['car']),
       pickupLocation: json['pickup_location'],

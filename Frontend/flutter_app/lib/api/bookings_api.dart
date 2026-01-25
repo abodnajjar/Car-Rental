@@ -74,4 +74,18 @@ class BookingsApi {
       );
     }
   }
+
+  /// PUT /admin/cars/{car_id}/availability
+  static Future<void> updateCarAvailability(int carId, bool isAvailable) async {
+    try {
+      await _dio.put(
+        '/admin/cars/$carId/availability',
+        data: {'status': isAvailable},
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data?['detail'] ?? 'Failed to update car availability',
+      );
+    }
+  }
 }

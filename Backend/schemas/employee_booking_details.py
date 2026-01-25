@@ -18,6 +18,7 @@ class CarInfo(BaseModel):
 
 class EmployeeBookingDetailsOut(BaseModel):
     booking_id: int
+    car_id: int
     customer: CustomerInfo
     car: CarInfo
 

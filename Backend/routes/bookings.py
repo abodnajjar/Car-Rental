@@ -356,7 +356,7 @@ def get_booking_details_for_employee(booking_id: int):
 
         cur.execute("""
             SELECT
-                r.id,
+                r.id, r.car_id,
                 r.pickup_location, r.dropoff_location,
                 r.start_date, r.end_date,
                 r.total_price, r.status,
@@ -377,27 +377,28 @@ def get_booking_details_for_employee(booking_id: int):
 
         return {
             "booking_id": row[0],
-            "pickup_location": row[1],
-            "dropoff_location": row[2],
-            "start_date": row[3],
-            "end_date": row[4],
-            "total_price": float(row[5]) if row[5] else 0.0,
-            "booking_status": row[6],
+            "car_id": row[1],
+            "pickup_location": row[2],
+            "dropoff_location": row[3],
+            "start_date": row[4],
+            "end_date": row[5],
+            "total_price": float(row[6]) if row[6] else 0.0,
+            "booking_status": row[7],
 
             "customer": {
-                "full_name": row[7],
-                "email": row[8],
-                "phone": row[9],
-                "driving_license_no": row[10],
+                "full_name": row[8],
+                "email": row[9],
+                "phone": row[10],
+                "driving_license_no": row[11],
             },
 
             "car": {
-                "brand": row[11],
-                "model": row[12],
-                "category": row[13],
-                "year": row[14],
-                "car_status": bool(row[15]),
-                "image_url": row[16],
+                "brand": row[12],
+                "model": row[13],
+                "category": row[14],
+                "year": row[15],
+                "car_status": bool(row[16]),
+                "image_url": row[17],
             }
         }
 
