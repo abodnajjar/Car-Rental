@@ -1,25 +1,75 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../api/dashboard_api.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  bool _loading = true;
+
+  int totalCars = 0;
+  int bookings = 0;
+  int customers = 0;
+  double revenue = 0;
+  List<double> monthlyProfit = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboard();
+  }
+
+  Future<void> _loadDashboard() async {
+    try {
+      final data = await DashboardApi.getDashboardStats();
+
+      if (!mounted) return;
+
+      setState(() {
+        totalCars = data["total_cars"] ?? 0;
+        bookings = data["bookings"] ?? 0;
+        customers = data["customers"] ?? 0;
+        revenue = (data["revenue"] ?? 0).toDouble();
+
+        monthlyProfit = (data["monthly_profit"] as List)
+            .map((e) => (e as num).toDouble())
+            .toList();
+
+        _loading = false;
+      });
+    } catch (e) {
+      debugPrint("Dashboard error: $e");
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
           Row(
             children: [
-              _statCard("Total Cars", "150", Icons.car_rental),
-              _statCard("Bookings", "480", Icons.book_online),
+              _statCard("Total Cars", totalCars.toString(), Icons.car_rental),
+              _statCard("Bookings", bookings.toString(), Icons.book_online),
             ],
           ),
           Row(
             children: [
-              _statCard("Customers", "1,200", Icons.people),
-              _statCard("Revenue", "\$45,000", Icons.attach_money),
+              _statCard("Customers", customers.toString(), Icons.people),
+              _statCard("Revenue", "\$${revenue.toStringAsFixed(0)}",
+                  Icons.attach_money),
             ],
           ),
           const SizedBox(height: 30),
@@ -65,9 +115,11 @@ class DashboardScreen extends StatelessWidget {
             const SizedBox(height: 10),
             Text(title, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 5),
-            Text(value,
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
@@ -75,9 +127,18 @@ class DashboardScreen extends StatelessWidget {
   }
 
   LineChartData _chartData() {
+    if (monthlyProfit.isEmpty) {
+      return LineChartData();
+    }
+
+    final double maxY = monthlyProfit.isEmpty
+        ? 5000
+        : (monthlyProfit.reduce((a, b) => a > b ? a : b) + 500)
+            .toDouble();
+
     return LineChartData(
       minY: 0,
-      maxY: 5000,
+      maxY: maxY,
       gridData: FlGridData(show: true),
       borderData: FlBorderData(show: false),
       titlesData: FlTitlesData(
@@ -86,7 +147,7 @@ class DashboardScreen extends StatelessWidget {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            interval: 1000,
+            interval: maxY / 5,
             getTitlesWidget: (value, meta) =>
                 Text("${(value / 1000).toInt()}K"),
           ),
@@ -96,9 +157,22 @@ class DashboardScreen extends StatelessWidget {
             showTitles: true,
             getTitlesWidget: (value, meta) {
               const months = [
-                "Jan","Feb","Mar","Apr","May","Jun",
-                "Jul","Aug","Sep","Oct","Nov","Dec"
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
               ];
+              if (value.toInt() < 0 || value.toInt() > 11) {
+                return const Text("");
+              }
               return Text(months[value.toInt()]);
             },
           ),
@@ -106,12 +180,13 @@ class DashboardScreen extends StatelessWidget {
       ),
       lineBarsData: [
         LineChartBarData(
-          spots: const [
-            FlSpot(0, 800), FlSpot(1, 1200), FlSpot(2, 1000),
-            FlSpot(3, 1600), FlSpot(4, 2000), FlSpot(5, 2400),
-            FlSpot(6, 2200), FlSpot(7, 3000), FlSpot(8, 3500),
-            FlSpot(9, 3200), FlSpot(10, 3900), FlSpot(11, 4500),
-          ],
+          spots: List.generate(
+            monthlyProfit.length,
+            (index) => FlSpot(
+              index.toDouble(),
+              monthlyProfit[index],
+            ),
+          ),
           isCurved: true,
           color: Colors.blue,
           barWidth: 4,

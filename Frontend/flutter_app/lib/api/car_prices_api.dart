@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import '../config/api_config.dart';
 import '../model/car_price_model.dart';
 
 class CarPricesApi {
@@ -14,9 +13,7 @@ class CarPricesApi {
 
   );
 
-  // ===============================
-  // GET prices for one car
-  // ===============================
+
   static Future<List<CarPrice>> getCarPrices(int carId) async {
     try {
       final res =
@@ -37,9 +34,6 @@ class CarPricesApi {
     }
   }
 
-  // ===============================
-  // UPDATE one price
-  // ===============================
   static Future<void> updateCarPrice({
     required int carId,
     required String day,
@@ -65,9 +59,6 @@ class CarPricesApi {
     }
   }
 
-  // ===============================
-  // BULK UPDATE (أفضل وأسرع)
-  // ===============================
   static Future<void> updateAllPrices({
     required int carId,
     required List<Map<String, dynamic>> prices,

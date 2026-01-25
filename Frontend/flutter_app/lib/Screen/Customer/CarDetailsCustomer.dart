@@ -35,7 +35,6 @@ class CarDetailsCustomer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ================= Image =================
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: imgUrl.isNotEmpty
@@ -66,8 +65,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
-            // ================= Info =================
             Text(
               "${car.brand} ${car.model}",
               style: const TextStyle(
@@ -85,8 +82,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
-            // ================= Availability =================
             Row(
               children: [
                 Icon(
@@ -108,8 +103,6 @@ class CarDetailsCustomer extends StatelessWidget {
             ),
 
             const SizedBox(height: 25),
-
-            // ================= Prices =================
             const Text(
               "Prices per Day",
               style: TextStyle(

@@ -30,7 +30,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         salary: double.parse(salary.text),
       );
 
-      Navigator.pop(context, true); // 🔄 يرجع ونعمل refresh
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));

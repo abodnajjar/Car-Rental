@@ -60,9 +60,11 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 30),
 
-              // حقل الايميل
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 10,
+                ),
                 child: SizedBox(
                   width: 350,
                   child: TextField(
@@ -73,18 +75,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
                     ),
                   ),
                 ),
               ),
 
-              // حقل الباسورد
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 10,
+                ),
                 child: SizedBox(
                   width: 350,
                   child: TextField(
@@ -96,10 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: const BorderSide(color: Colors.blue, width: 2),
-                      ),
                     ),
                   ),
                 ),
@@ -107,7 +103,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
-              // زر تسجيل الدخول
               SizedBox(
                 width: 350,
                 height: 50,
@@ -134,7 +129,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 30),
 
-              // رابط تسجيل حساب جديد
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -170,9 +164,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
       return;
     }
 
@@ -185,37 +179,37 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       final role = response['role'] as String;
-      final userId=response['user_id'] as int;
-      // حفظ بيانات بسيطة
+      final userId = response['user_id'] as int;
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString("role", role);
       await prefs.setBool("isLoggedIn", true);
       await prefs.setInt("user_id", userId);
 
-      // التوجيه حسب الدور باستخدام push
+      // 🔥 حذف كل الصفحات السابقة (ومنها Login)
       if (role == "customer") {
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const CustomerScreen()),
+          MaterialPageRoute(builder: (_) => const CustomerScreen()),
+          (route) => false,
         );
       } else if (role == "employee") {
-        Navigator.push(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const EmployeeScreen()),
+          MaterialPageRoute(builder: (_) => const EmployeeScreen()),
+          (route) => false,
         );
-      } 
-       else if (role == "admin") {
-         Navigator.pushReplacement(
-           context,
-           MaterialPageRoute(
-            builder: (context) => const AdminLayout(),
-         ),
-         );
-       }
+      } else if (role == "admin") {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminLayout()),
+          (route) => false,
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       setState(() => isLoading = false);
     }

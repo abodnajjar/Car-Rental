@@ -126,7 +126,6 @@ class _BookingHistoryScreenState
       ),
       child: Row(
         children: [
-          // ================= Image =================
           Container(
             width: 90,
             height: 70,
@@ -149,7 +148,6 @@ class _BookingHistoryScreenState
 
           const SizedBox(width: 12),
 
-          // ================= Info =================
           Expanded(
             child: Column(
               crossAxisAlignment:
@@ -187,7 +185,6 @@ class _BookingHistoryScreenState
             ),
           ),
 
-          // ================= Status =================
           Container(
             padding:
                 const EdgeInsets.symmetric(
