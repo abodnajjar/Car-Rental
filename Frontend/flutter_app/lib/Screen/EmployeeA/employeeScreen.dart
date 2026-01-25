@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import '../profileScreen.dart';
 import '../../api/bookings_api.dart';
 import '../../api/cars_api.dart';
-import '../../config/api_config.dart';
 import '../../model/booking_model.dart';
 import '../../model/car_model.dart';
 import 'employee_booking_details_screen.dart';
 import '../../mock/mock_booking_data.dart';
+import 'widgets/employee_header_widget.dart';
+import 'widgets/status_header_widget.dart';
+import 'widgets/cars_header_widget.dart';
+import 'widgets/booking_card_widget.dart';
+import 'widgets/car_card_widget.dart';
+import 'widgets/empty_state_widget.dart';
+import 'widgets/error_state_widget.dart';
 
 class EmployeeScreen extends StatefulWidget {
   const EmployeeScreen({super.key});
@@ -269,27 +275,19 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
     }
 
     if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 60),
-            const SizedBox(height: 16),
-            Text(_error!, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadBookings,
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
+      return ErrorStateWidget(
+        error: _error!,
+        onRetry: _loadBookings,
       );
     }
 
     return Column(
       children: [
-        _employeeHeader(),
-        _statusHeader(),
+        const EmployeeHeaderWidget(),
+        StatusHeaderWidget(
+          currentStatus: _currentStatus,
+          itemCount: _bookings.length,
+        ),
         Expanded(
           child: _buildBookingsList(),
         ),
@@ -381,39 +379,13 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
 
   Widget _buildBookingsList() {
     if (_bookings.isEmpty) {
-      return RefreshIndicator(
+      return EmptyStateWidget(
+        icon: Icons.inbox_outlined,
+        title: 'No $_currentStatus bookings',
+        subtitle: _currentStatus == 'pending'
+            ? 'All bookings have been processed.'
+            : 'New updates will appear here.',
         onRefresh: _loadBookings,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(24),
-          children: [
-            const SizedBox(height: 60),
-            Icon(
-              Icons.inbox_outlined,
-              color: Colors.grey.shade400,
-              size: 72,
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: Text(
-                'No $_currentStatus bookings',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                _currentStatus == 'pending'
-                    ? 'All bookings have been processed.'
-                    : 'New updates will appear here.',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ],
-        ),
       );
     }
 
@@ -423,7 +395,11 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
         padding: const EdgeInsets.all(16),
         itemCount: _bookings.length,
         itemBuilder: (context, index) {
-          return _buildBookingCard(_bookings[index]);
+          return BookingCardWidget(
+            booking: _bookings[index],
+            onTap: () => _navigateToDetails(_bookings[index].bookingId),
+            formatDate: _formatDate,
+          );
         },
       ),
     );
@@ -432,55 +408,39 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
   Widget _buildCarsBody() {
     return Column(
       children: [
-        _employeeHeader(),
-        _carsHeader(),
+        const EmployeeHeaderWidget(),
+        CarsHeaderWidget(
+          itemCount: _filteredCars.length,
+          onSearchChanged: (v) {
+            setState(() {
+              _carSearch = v;
+              _filteredCars = _applyCarFilter(v, _cars);
+            });
+          },
+        ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadCars,
             child: _carsLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _carsError != null
-                    ? ListView(
-                        padding: const EdgeInsets.all(24),
-                        children: [
-                          const SizedBox(height: 40),
-                          const Icon(Icons.error_outline,
-                              color: Colors.red, size: 64),
-                          const SizedBox(height: 12),
-                          Center(
-                            child: Text(
-                              _carsError!,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: _loadCars,
-                            child: const Text('Retry'),
-                          ),
-                        ],
+                    ? EmptyStateWidget(
+                        icon: Icons.error_outline,
+                        title: 'Error loading cars',
+                        subtitle: _carsError!,
+                        onRefresh: _loadCars,
                       )
                     : _filteredCars.isEmpty
-                        ? ListView(
-                            padding: const EdgeInsets.all(24),
-                            children: const [
-                              SizedBox(height: 40),
-                              Icon(Icons.directions_car,
-                                  color: Colors.grey, size: 64),
-                              SizedBox(height: 12),
-                              Center(
-                                child: Text(
-                                  'No cars found for this search.',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
+                        ? const EmptyStateWidget(
+                            icon: Icons.directions_car,
+                            title: 'No cars found',
+                            subtitle: 'No cars found for this search.',
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.all(16),
                             itemCount: _filteredCars.length,
                             itemBuilder: (context, index) {
-                              return _buildCarCard(_filteredCars[index]);
+                              return CarCardWidget(car: _filteredCars[index]);
                             },
                           ),
           ),
@@ -507,359 +467,5 @@ class _EmployeeScreenState extends State<EmployeeScreen> {
       }
       return bStatus == 'pending';
     }).toList();
-  }
-
-  Widget _carsHeader() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.directions_car, color: Colors.blue),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Text(
-                  'All Cars',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              Text(
-                '${_filteredCars.length} items',
-                style: const TextStyle(color: Colors.grey),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            decoration: InputDecoration(
-              hintText: 'Search by brand, model, or category',
-              prefixIcon: const Icon(Icons.search),
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onChanged: (v) {
-              setState(() {
-                _carSearch = v;
-                _filteredCars = _applyCarFilter(v, _cars);
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCarCard(Car car) {
-    final price = _minPrice(car);
-    final isAvailable = car.status;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 14),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: SizedBox(
-                width: 110,
-                height: 80,
-                child: car.imageUrl.isNotEmpty
-                    ? Image.network(
-                        _buildImageUrl(car.imageUrl),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stack) => Container(
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.directions_car,
-                              color: Colors.grey),
-                        ),
-                      )
-                    : Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(
-                          Icons.directions_car,
-                          color: Colors.grey,
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${car.brand} ${car.model}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isAvailable
-                              ? Colors.green.withOpacity(0.12)
-                              : Colors.red.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          isAvailable ? 'Available' : 'Unavailable',
-                          style: TextStyle(
-                            color: isAvailable ? Colors.green : Colors.red,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${car.category} • ${car.year}',
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  if (price != null)
-                    Text(
-                      '${price.toStringAsFixed(0)} NIS / day',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  if (price == null)
-                    const Text(
-                      'Price not set',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  double? _minPrice(Car car) {
-    if (car.prices.isEmpty) return null;
-    double minPrice = car.prices.first.price;
-    for (final p in car.prices) {
-      if (p.price < minPrice) minPrice = p.price;
-    }
-    return minPrice;
-  }
-
-  String _buildImageUrl(String img) {
-    if (img.trim().isEmpty) return '';
-    if (img.startsWith('http://') || img.startsWith('https://')) return img;
-    final base = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl.substring(0, ApiConfig.baseUrl.length - 1)
-        : ApiConfig.baseUrl;
-    final path = img.startsWith('/') ? img : '/$img';
-    return '$base$path';
-  }
-
-  Widget _buildBookingCard(PendingBooking booking) {
-    final days = booking.endDate.difference(booking.startDate).inDays;
-    final statusLabel = _statusLabel(booking.bookingStatus);
-    final statusColor = _statusColor(booking.bookingStatus);
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () => _navigateToDetails(booking.bookingId),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _carThumbnail(booking.imageUrl),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Booking #${booking.bookingId}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: statusColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: TextStyle(
-                              color: statusColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 18),
-                    _infoRow(Icons.calendar_today, 'Start',
-                        _formatDate(booking.startDate)),
-                    _infoRow(Icons.event_available, 'End',
-                        _formatDate(booking.endDate)),
-                    _infoRow(Icons.access_time, 'Duration', '$days days'),
-                    _infoRow(Icons.attach_money, 'Total',
-                        '\$${booking.totalPrice.toStringAsFixed(2)}'),
-                    if (booking.pickupLocation != null)
-                      _infoRow(Icons.location_on, 'Pickup',
-                          booking.pickupLocation!),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton.icon(
-                          onPressed: () => _navigateToDetails(booking.bookingId),
-                          icon: const Icon(Icons.arrow_forward),
-                          label: const Text('View Details'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _carThumbnail(String? imageUrl) {
-    final borderRadius = BorderRadius.circular(12);
-
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return Container(
-        width: 110,
-        height: 90,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade300,
-          borderRadius: borderRadius,
-        ),
-        child: const Icon(Icons.directions_car, color: Colors.white, size: 40),
-      );
-    }
-
-    final imageWidget = imageUrl.startsWith('http')
-        ? Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stack) => const Icon(
-              Icons.directions_car,
-              size: 40,
-              color: Colors.white,
-            ),
-          )
-        : Image.asset(
-            'assets/car_images/$imageUrl',
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stack) => const Icon(
-              Icons.directions_car,
-              size: 40,
-              color: Colors.white,
-            ),
-          );
-
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: Container(
-        width: 110,
-        height: 90,
-        color: Colors.grey.shade300,
-        child: imageWidget,
-      ),
-    );
-  }
-
-  String _statusLabel(String status) {
-    switch (status.toLowerCase().trim()) {
-      case 'approved':
-      case 'accepted':
-      case 'active':
-      case 'completed':
-        return 'Accepted';
-      case 'cancelled':
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return 'Pending';
-    }
-  }
-
-  Color _statusColor(String status) {
-    switch (status.toLowerCase().trim()) {
-      case 'approved':
-      case 'accepted':
-      case 'active':
-      case 'completed':
-        return Colors.green;
-      case 'cancelled':
-      case 'rejected':
-        return Colors.red;
-      default:
-        return Colors.orange;
-    }
-  }
-
-  Widget _infoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: Colors.grey),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: const TextStyle(
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
