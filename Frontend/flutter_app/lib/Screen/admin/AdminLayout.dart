@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import './employees/employees_screen.dart';
 import './cars/CarsScreen.dart';
-import 'bookings/booked_cars_screen.dart';
+import 'bookings/bookAdminScreen.dart.dart';
 
 import '../profileScreen.dart';
 
@@ -28,7 +28,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     DashboardScreen(),
     EmployeesScreen(),
     CarsScreen(),
-    BookedCarsScreen(),
+    BookAdminScreen(),
   ];
 
   @override

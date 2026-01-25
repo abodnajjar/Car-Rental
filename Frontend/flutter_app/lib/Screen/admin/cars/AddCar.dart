@@ -91,21 +91,20 @@ class _AddCarScreenState extends State<AddCarScreen> {
     }
     return true;
   }
+Future<void> _submit() async {
+  if (!_validateForm()) return;
 
-  Future<void> _submit() async {
-    if (!_validateForm()) return;
+  setState(() => _loading = true);
 
-    setState(() => _loading = true);
+  try {
+    final year = int.parse(_yearController.text.trim());
 
-    try {
-      final year = int.parse(_yearController.text.trim());
-
-      final prices = _priceControllers.entries.map((e) {
-        return {
-          "day": e.key,
-          "price": double.parse(e.value.text.trim()),
-        };
-      }).toList();
+    final prices = _priceControllers.entries.map((e) {
+      return {
+        "day": e.key,
+        "price": double.parse(e.value.text.trim()),
+      };
+    }).toList();
 
       final created = await CarsApi.addCar({
         "brand": _brandController.text.trim(),
@@ -117,7 +116,7 @@ class _AddCarScreenState extends State<AddCarScreen> {
         "prices": prices,
       });
 
-      final carId = created.carId;
+    final carId = created.carId;
 
       await CarsApi.uploadCarImage(
         carId,
@@ -130,14 +129,16 @@ class _AddCarScreenState extends State<AddCarScreen> {
         "image_url": "/uploads/cars/$carId.jpg",
       });
 
-      if (!mounted) return;
-      Navigator.pop(context, true);
-    } catch (e) {
-      _showMessage(e.toString());
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    if (!mounted) return;
+    Navigator.pop(context, true);
+
+  } catch (e) {
+    _showMessage(e.toString());
+  } finally {
+    if (mounted) setState(() => _loading = false);
   }
+}
+
 
   @override
   void dispose() {
