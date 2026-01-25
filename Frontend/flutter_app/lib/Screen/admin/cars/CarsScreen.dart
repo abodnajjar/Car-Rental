@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../api/cars_api.dart';
 import '../../../model/car_model.dart';
 import 'EditCar.dart';
-import 'car_prices_screen.dart';
+import 'CarPricesScreen.dart';
 import 'AddCar.dart';
 
 class CarsScreen extends StatefulWidget {
@@ -21,13 +21,9 @@ class _CarsScreenState extends State<CarsScreen> {
 
   String _buildImageUrl(String img) {
     var v = img.trim();
-
     v = v.replaceAll('"', '').replaceAll("'", '');
-
     if (v.isEmpty) return "";
-
     if (v.startsWith("http://") || v.startsWith("https://")) return v;
-
     final path = v.startsWith("/") ? v : "/$v";
     return "$_apiBaseUrl$path";
   }
@@ -73,8 +69,9 @@ class _CarsScreenState extends State<CarsScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Delete Car"),
-        content:
-            Text("Are you sure you want to delete ${car.brand} ${car.model}?"),
+        content: Text(
+          "Are you sure you want to delete ${car.brand} ${car.model}?",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -98,16 +95,16 @@ class _CarsScreenState extends State<CarsScreen> {
       await CarsApi.deleteCar(id);
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Car deleted successfully")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Car deleted successfully")));
 
       _loadCars();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     }
   }
 
@@ -137,14 +134,14 @@ class _CarsScreenState extends State<CarsScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredCars.isEmpty
-                    ? const Center(child: Text("No cars found"))
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _filteredCars.length,
-                        itemBuilder: (context, index) {
-                          return _carCard(_filteredCars[index]);
-                        },
-                      ),
+                ? const Center(child: Text("No cars found"))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _filteredCars.length,
+                    itemBuilder: (context, index) {
+                      return _carCard(_filteredCars[index]);
+                    },
+                  ),
           ),
         ],
       ),
@@ -163,8 +160,7 @@ class _CarsScreenState extends State<CarsScreen> {
   }
 
   Widget _carCard(Car car) {
-    final imgUrl = _buildImageUrl(car.imageUrl);
-
+    final imgUrl = car.fullImageUrl;
     return InkWell(
       onTap: () async {
         final updated = await Navigator.push(
@@ -201,8 +197,11 @@ class _CarsScreenState extends State<CarsScreen> {
                     : null,
               ),
               child: imgUrl.isEmpty
-                  ? const Icon(Icons.directions_car,
-                      size: 40, color: Colors.grey)
+                  ? const Icon(
+                      Icons.directions_car,
+                      size: 40,
+                      color: Colors.grey,
+                    )
                   : null,
             ),
 

@@ -14,7 +14,7 @@ UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:52742", "http://127.0.0.1:52742", "http://localhost:*", "http://127.0.0.1:*", "*"],
+    allow_origins=["http://127.0.0.1:8000","http://192.168.32.193:8000", "http://127.0.0.1:52742", "http://localhost:*", "http://127.0.0.1:*", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

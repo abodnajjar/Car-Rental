@@ -1,4 +1,5 @@
 import 'car_price_model.dart';
+
 class Car {
   final int carId;
   final String brand;
@@ -9,7 +10,6 @@ class Car {
   final String imageUrl;
   final List<CarPrice> prices;
 
-
   Car({
     required this.carId,
     required this.brand,
@@ -19,18 +19,17 @@ class Car {
     required this.status,
     required this.imageUrl,
     required this.prices,
-
   });
 
   factory Car.fromJson(Map<String, dynamic> json) {
     return Car(
-       carId: (json["car_id"] as num?)?.toInt()
-        ?? (json["id"] as num?)?.toInt()
-        ?? 0,
+      carId: (json["car_id"] as num?)?.toInt()
+          ?? (json["id"] as num?)?.toInt()
+          ?? 0,
       brand: json["brand"] ?? "",
       model: json["model"] ?? "",
       category: json["category"] ?? "",
-      year: json["year"] ?? 0,
+      year: (json["year"] as num?)?.toInt() ?? 0,
       status: json["status"] == true,
       imageUrl: (json["image_url"] ?? "").toString(),
       prices: ((json["prices"] ?? []) as List)
@@ -38,4 +37,10 @@ class Car {
           .toList(),
     );
   }
+
+
+  String get fullImageUrl =>
+      imageUrl.isNotEmpty
+          ? "http://127.0.0.1:8000/uploads/cars/$imageUrl"
+          : "";
 }

@@ -95,56 +95,52 @@ class _AddCarScreenState extends State<AddCarScreen> {
     }
     return true;
   }
+Future<void> _submit() async {
+  if (!_validateForm()) return;
 
-  Future<void> _submit() async {
-    if (!_validateForm()) return;
+  setState(() => _loading = true);
 
-    setState(() => _loading = true);
+  try {
+    final year = int.parse(_yearController.text.trim());
 
-    try {
-      final year = int.parse(_yearController.text.trim());
+    final prices = _priceControllers.entries.map((e) {
+      return {
+        "day": e.key,
+        "price": double.parse(e.value.text.trim()),
+      };
+    }).toList();
 
-      final prices = _priceControllers.entries.map((e) {
-        return {
-          "day": e.key,
-          "price": double.parse(e.value.text.trim()),
-        };
-      }).toList();
+    // 1️⃣ Add car (بدون صورة)
+    final created = await CarsApi.addCar({
+      "brand": _brandController.text.trim(),
+      "model": _modelController.text.trim(),
+      "category": _categoryController.text.trim(),
+      "year": year,
+      "status": _status,
+      "image_url": "", // 👈 خليها فاضية
+      "prices": prices,
+    });
 
-      // 1) add car json
-      final created = await CarsApi.addCar({
-        "brand": _brandController.text.trim(),
-        "model": _modelController.text.trim(),
-        "category": _categoryController.text.trim(),
-        "year": year,
-        "status": _status,
-        "image_url": "",
-        "prices": prices,
-      });
+    final carId = created.carId;
 
-      final carId = created.carId;
+    // 2️⃣ Upload image (السيرفر هو اللي بحدث DB)
+    await CarsApi.uploadCarImage(
+      carId,
+      fileName: _imageName!,
+      bytes: _imageBytes,
+      filePath: _imagePath,
+    );
 
-      // 2) upload image (web + mobile)
-      await CarsApi.uploadCarImage(
-        carId,
-        fileName: _imageName!,
-        bytes: _imageBytes,
-        filePath: _imagePath,
-      );
+    if (!mounted) return;
+    Navigator.pop(context, true);
 
-      // 3) update image_url (إذا أنت فعلاً بتخزنها بهالمسار بالباك اند)
-      await CarsApi.updateCar(carId, {
-        "image_url": "/uploads/cars/$carId.jpg",
-      });
-
-      if (!mounted) return;
-      Navigator.pop(context, true);
-    } catch (e) {
-      _showMessage(e.toString());
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+  } catch (e) {
+    _showMessage(e.toString());
+  } finally {
+    if (mounted) setState(() => _loading = false);
   }
+}
+
 
   @override
   void dispose() {
