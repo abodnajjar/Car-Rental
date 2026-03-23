@@ -36,12 +36,17 @@ class _AddCarScreenState extends State<AddCarScreen> {
   String? _imagePath;
   String? _imageName;
 
-  String _dayLabel(String day) => day[0].toUpperCase() + day.substring(1);
+  String _dayLabel(String day) =>
+      day[0].toUpperCase() + day.substring(1);
 
   void _showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  // ===============================
+  // PICK IMAGE
+  // ===============================
   Future<void> _pickImage() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -54,13 +59,14 @@ class _AddCarScreenState extends State<AddCarScreen> {
 
     setState(() {
       _imageName = file.name;
-
       _imageBytes = kIsWeb ? file.bytes : null;
-
       _imagePath = !kIsWeb ? file.path : null;
     });
   }
 
+  // ===============================
+  // VALIDATION
+  // ===============================
   bool _validateForm() {
     if (_brandController.text.trim().isEmpty ||
         _modelController.text.trim().isEmpty ||
@@ -71,8 +77,8 @@ class _AddCarScreenState extends State<AddCarScreen> {
     }
 
     final year = int.tryParse(_yearController.text.trim());
-    if (year == null || year < 1950 || year > 2100) {
-      _showMessage("Please enter a valid year");
+    if (year == null || year < 1990 || year > DateTime.now().year + 1) {
+      _showMessage("Invalid year");
       return false;
     }
 
@@ -83,41 +89,48 @@ class _AddCarScreenState extends State<AddCarScreen> {
     }
 
     for (final entry in _priceControllers.entries) {
-      final p = double.tryParse(entry.value.text.trim());
-      if (p == null || p <= 0) {
+      final price = double.tryParse(entry.value.text.trim());
+      if (price == null || price <= 0) {
         _showMessage("Invalid price for ${_dayLabel(entry.key)}");
         return false;
       }
     }
+
     return true;
   }
-Future<void> _submit() async {
-  if (!_validateForm()) return;
 
-  setState(() => _loading = true);
+  // ===============================
+  // SUBMIT
+  // ===============================
+  Future<void> _submit() async {
+    if (!_validateForm()) return;
 
-  try {
-    final year = int.parse(_yearController.text.trim());
+    setState(() => _loading = true);
 
-    final prices = _priceControllers.entries.map((e) {
-      return {
-        "day": e.key,
-        "price": double.parse(e.value.text.trim()),
-      };
-    }).toList();
+    try {
+      final year = int.parse(_yearController.text.trim());
 
+      final prices = _priceControllers.entries.map((e) {
+        return {
+          "day": e.key,
+          "price": double.parse(e.value.text.trim()),
+        };
+      }).toList();
+
+      // 1️⃣ Create car without image
       final created = await CarsApi.addCar({
         "brand": _brandController.text.trim(),
         "model": _modelController.text.trim(),
         "category": _categoryController.text.trim(),
         "year": year,
         "status": _status,
-        "image_url": "",
+        "image_url": "", // مهم جداً
         "prices": prices,
       });
 
-    final carId = created.carId;
+      final carId = created.carId;
 
+      // 2️⃣ Upload image
       await CarsApi.uploadCarImage(
         carId,
         fileName: _imageName!,
@@ -125,20 +138,22 @@ Future<void> _submit() async {
         filePath: _imagePath,
       );
 
-      await CarsApi.updateCar(carId, {
-        "image_url": "/uploads/cars/$carId.jpg",
-      });
+      if (!mounted) return;
 
-    if (!mounted) return;
-    Navigator.pop(context, true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Car added successfully"),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-  } catch (e) {
-    _showMessage(e.toString());
-  } finally {
-    if (mounted) setState(() => _loading = false);
+      Navigator.pop(context, true);
+    } catch (e) {
+      _showMessage(e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
-}
-
 
   @override
   void dispose() {
@@ -152,142 +167,93 @@ Future<void> _submit() async {
     super.dispose();
   }
 
+  // ===============================
+  // UI
+  // ===============================
   @override
   Widget build(BuildContext context) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
-    );
-
     return Scaffold(
+      backgroundColor: Colors.grey.shade100,
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 71, 113, 241),
         title: const Text("Add Car"),
         centerTitle: true,
       ),
-      backgroundColor: Colors.grey.shade100,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _sectionCard(
-              title: "Car Info",
-              child: Column(
-                children: [
-                  _rowField("Brand", _brandController, border: border),
-                  _rowField("Model", _modelController, border: border),
-                  _rowField("Category", _categoryController, border: border),
-                  _rowField(
-                    "Year",
-                    _yearController,
-                    border: border,
-                    keyboard: TextInputType.number,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
+            _input("Brand", _brandController),
+            _input("Model", _modelController),
+            _input("Category", _categoryController),
+            _input("Year", _yearController,
+                keyboard: TextInputType.number),
 
-            _sectionCard(
-              title: "Image",
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: _imageName == null
-                          ? Center(
-                              child: Text(
-                                "No image selected",
-                                style: TextStyle(color: Colors.grey.shade700),
-                              ),
-                            )
-                          : (kIsWeb
-                              ? Image.memory(
-                                  _imageBytes!,
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.file(
-                                  File(_imagePath!),
-                                  fit: BoxFit.cover,
-                                )),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _imageName == null ? "No image selected" : _imageName!,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(color: Colors.grey.shade700),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton.icon(
-                        onPressed: _loading ? null : _pickImage,
-                        icon: const Icon(Icons.image_outlined),
-                        label: const Text("Choose"),
-                      ),
-                    ],
-                  ),
-                ],
+            const SizedBox(height: 16),
+
+            // IMAGE
+            GestureDetector(
+              onTap: _loading ? null : _pickImage,
+              child: Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: _imageName == null
+                      ? const Center(
+                          child: Text("Tap to select image"))
+                      : (kIsWeb
+                          ? Image.memory(_imageBytes!,
+                              fit: BoxFit.cover)
+                          : Image.file(File(_imagePath!),
+                              fit: BoxFit.cover)),
+                ),
               ),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 20),
 
-            _sectionCard(
-              title: "Rental Prices (Sunday → Saturday)",
-              child: Column(
-                children: _priceControllers.entries.map((e) {
-                  return _rowField(
-                    _dayLabel(e.key),
-                    e.value,
-                    border: border,
-                    keyboard: TextInputType.number,
-                    suffixText: "₪",
-                  );
-                }).toList(),
-              ),
+            // PRICES
+            ..._priceControllers.entries.map((e) {
+              return _input(
+                _dayLabel(e.key),
+                e.value,
+                keyboard: TextInputType.number,
+              );
+            }).toList(),
+
+            const SizedBox(height: 20),
+
+            SwitchListTile(
+              title: const Text("Available"),
+              value: _status,
+              onChanged: (v) => setState(() => _status = v),
             ),
 
-            const SizedBox(height: 14),
-
-            _sectionCard(
-              title: "Status",
-              child: SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text("Available"),
-                value: _status,
-                onChanged: (v) => setState(() => _status = v),
-              ),
-            ),
-
-            const SizedBox(height: 18),
+            const SizedBox(height: 20),
 
             SizedBox(
               width: double.infinity,
-              height: 52,
+              height: 55,
               child: ElevatedButton(
                 onPressed: _loading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 71, 113, 241),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
+                  backgroundColor:
+                      const Color.fromARGB(255, 71, 113, 241),
                 ),
                 child: _loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Add Car", style: TextStyle(fontSize: 18)),
+                    ? const CircularProgressIndicator(
+                        color: Colors.white)
+                    : const Text(
+                        "Add Car",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ],
@@ -296,73 +262,25 @@ Future<void> _submit() async {
     );
   }
 
-  Widget _sectionCard({required String title, required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
-              style:
-                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _rowField(
+  Widget _input(
     String label,
     TextEditingController controller, {
-    required OutlineInputBorder border,
     TextInputType keyboard = TextInputType.text,
-    String? suffixText,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
-              ),
-            ),
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboard,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              keyboardType: keyboard,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                enabledBorder: border,
-                focusedBorder: border.copyWith(
-                  borderSide: const BorderSide(
-                    color: Color.fromARGB(255, 71, 113, 241),
-                    width: 1.5,
-                  ),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                suffixText: suffixText,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

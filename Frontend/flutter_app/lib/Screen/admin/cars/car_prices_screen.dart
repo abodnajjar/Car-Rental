@@ -36,9 +36,7 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
     _loadPrices();
   }
 
-  // ===============================
-  // Initialize controllers safely
-  // ===============================
+  
   void _initializeControllers() {
     for (final day in _orderedDays) {
       _controllers[day] = TextEditingController(text: "0");
@@ -46,9 +44,6 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
     }
   }
 
-  // ===============================
-  // Load prices from API
-  // ===============================
   Future<void> _loadPrices() async {
     setState(() => _loading = true);
 
@@ -71,9 +66,6 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
     }
   }
 
-  // ===============================
-  // Validate prices
-  // ===============================
   bool _validateAll() {
     bool valid = true;
 
@@ -99,9 +91,6 @@ class _CarPricesScreenState extends State<CarPricesScreen> {
     return valid;
   }
 
-  // ===============================
-  // Save all prices (Bulk update)
-  // ===============================
   Future<void> _saveAll() async {
     if (!_validateAll()) return;
 

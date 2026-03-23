@@ -13,11 +13,10 @@ class CarCardWidget extends StatelessWidget {
   double? _minPrice(Car car) {
     if (car.prices.isEmpty) return null;
 
-    // تجاهل الأسعار السالبة/الـ null (إذا عندك) واشتغل على الأقل قيمة
     double? minPrice;
     for (final p in car.prices) {
-      final value = p.price; // عندك price double (حسب موديلك)
-      if (value <= 0) continue; // إذا بدك تعرض 0 احذف السطر
+      final value = p.price; 
+      if (value <= 0) continue; 
       minPrice = (minPrice == null) ? value : (value < minPrice ? value : minPrice);
     }
     return minPrice;
@@ -27,20 +26,16 @@ class CarCardWidget extends StatelessWidget {
     var v = img.trim();
     if (v.isEmpty) return "";
 
-    // رابط كامل جاهز
     if (v.startsWith("http://") || v.startsWith("https://")) return v;
 
-    // إذا جايك /uploads... خليه زي ما هو مع baseUrl
     if (v.startsWith("/uploads")) {
       return "${ApiConfig.baseUrl}$v";
     }
 
-    // إذا جايك cars/1.jpg أو uploads/cars/1.jpg
     if (v.startsWith("uploads/")) {
       return "${ApiConfig.baseUrl}/$v";
     }
 
-    // الحالة الشائعة: "1.jpg" => /uploads/cars/1.jpg
     return "${ApiConfig.baseUrl}/uploads/cars/$v";
   }
 
@@ -49,7 +44,6 @@ class CarCardWidget extends StatelessWidget {
     final price = _minPrice(car);
     final isAvailable = car.status;
 
-    // ✅ استخدم car.imageUrl (مش fullImageUrl) عشان نبنيها صح هون
     final imgUrl = _buildImageUrl(car.imageUrl);
 
     return Card(
@@ -61,7 +55,6 @@ class CarCardWidget extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // الصورة
             Container(
               width: 110,
               height: 80,
@@ -89,7 +82,7 @@ class CarCardWidget extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // المعلومات
+            
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

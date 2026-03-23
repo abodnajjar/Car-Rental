@@ -26,17 +26,15 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
     final userId = prefs.getInt("user_id");
     final role = prefs.getString("role");
 
-    await Future.delayed(const Duration(milliseconds: 300)); // UX
+    await Future.delayed(const Duration(milliseconds: 300)); 
 
     if (!mounted) return;
 
     if (userId == null || role == null) {
-      // ❌ غير مسجل
       _go(const LoginScreen());
       return;
     }
 
-    // ✅ مسجل → نحدد الوجهة
     switch (role) {
       case "customer":
         _go(const CustomerScreen());
